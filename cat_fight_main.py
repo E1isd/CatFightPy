@@ -51,7 +51,7 @@ class Cat_Fight:
         # Der Gegner-Auswahl Cursor, der automatisch auf den ersten Gegner steht
         self.attack_cursor = Cursor (self, self.enemys[self.current_target].rect.right +10, self.enemys[self.current_target].rect.centery -10)
 
-        self.test_image = pygame.image.load("Cat_Fight/images/Cat-Healer.png")
+        self.test_image = pygame.image.load("images/Cat-Healer.png")
         self.image_rect = self.test_image.get_rect()
 
 
@@ -138,57 +138,68 @@ class Cat_Fight:
                 if self.action_box.current_position > 0:
                     self.action_box.current_position -=1
             # Wenn hingegen der Attack-Cursor aktiv ist, wird dieser nach oben bewegt (die Reihenfolge beginnt wieder von hinten, wenn
-            # 0 erreicht wurde.
+            # 0 erreicht wurde).
             elif self.attack_cursor.active == True:
                 self.current_target -= 1
                 if self.current_target < 0:
                     self.current_target = len(self.enemys) -1
         if event.key == pygame.K_RETURN:
                 if self.current_player in self.cat_heroes and self.action_box.active == True:
-                    if self.action_box.current_position == 0:
+                    if self.action_box.current_position == 0: # Befehl, um den Angriffscursor zu aktivieren
                         self._create_attack_cursor()
                     if self.action_box.current_position == 1:
                         print("Items")
                     if self.action_box.current_position == 2:
                         print(self.current_player.actions[2])
-                elif self.attack_cursor.active == True:
+                elif self.attack_cursor.active == True: # Wenn der Angriffscursor aktiviert ist, wird das aktuelle Ziel angegriffen
                     self.current_player.standard_attack(self.enemys[self.current_target])
                     self._create_attack_cursor()
-        if event.key == pygame.K_ESCAPE:
+        if event.key == pygame.K_ESCAPE: 
+            # Falls der Angriffscursor aktiviert ist, wird er durch die Escape-Tatse wieder deaktiviert.
             if self.attack_cursor.active == True:
                 self._create_attack_cursor()
                 self.current_target = 0
             
 
     def _check_start_turn(self):
+            """Überprüft, ob die Bedingung für den Start der Runde gegeben ist"""
+            # Falls ja, wird ein neuer aktiver Spieler ausgewählt
             if self.next_turn == True:
                 self.current_player = self.fighting_order[self.turn_timer]
                 self.next_turn = False
 
     def _check_next_turn(self):
+        """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""
+        # Die Runde endet, wenn der aktive Spieler keine Aktion mehr übrig hat
         if self.current_player.action == False:
-            self.turn_timer +=1
+            self.turn_timer +=1 # Der Rundenzähler wird um eins erhöht
+            # Wenn der Rundenzähler größer ist als die aktuelle Anzahl Kampfteilnehmer, wird der 
+            # Zähler wieder zurückgesetzt und die Kampfreihenfolge beginnt von vorne
             if self.turn_timer > len(self.fighting_order) -1:
                 self.turn_timer = 0
                 for player in self.fighting_order:
                     player.action = True
             self.turn_counter +=1
-            self.action_box.current_position = 0
-            self.current_target = 0
+            self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
+            self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
             self.next_turn = True
     
     def _create_attack_cursor(self):
+        """Erschafft den Angriffscursor"""
         if self.action_box.active == True:
             self.attack_cursor.active = True
             self.action_box.active = False
+        # Falls bereits ein Angriffscursor aktiv ist, wird er durch diesen Befehl wieder deaktivert
         elif self.attack_cursor.active == True:
             self.attack_cursor.active = False
             self.action_box.active = True
 
     def _check_if_alive(self):
+        """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
         for player in self.fighting_order:
             if player.current_hp <= 0:
                 player.is_alive = False
+        # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
         for enemy in self.enemys:
             if enemy.is_alive == False:
                 self.enemys.remove(enemy)

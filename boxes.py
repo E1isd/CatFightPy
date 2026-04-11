@@ -9,7 +9,7 @@ class Box():
         self.screen = cf_game.screen
         self.screen_rect = self.screen.get_rect()
         self.font_freetype = pygame.freetype.SysFont(None,30) # Erschafft eine Font-Klasse mit einer bestimmten Schriftart und Schriftgröße
-        self.cursor = Cursor(self,0,0) # Der Cursor für die Box
+        self.cursor = Cursor(self,0,0) # Der Cursor für die Box 
 
 
 
