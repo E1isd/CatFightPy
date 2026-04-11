@@ -182,7 +182,7 @@ class Cat_Fight:
             self.turn_counter +=1
             self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
             self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
-            self.next_turn = True
+            self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
     
     def _create_attack_cursor(self):
         """Erschafft den Angriffscursor"""
