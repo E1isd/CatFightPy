@@ -197,7 +197,7 @@ class Cat_Fight:
     def _check_if_alive(self):
         """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
         for player in self.fighting_order:
-            if player.current_hp <= 0:
+            if player.current_hp <= 0: # Wenn die aktuelle HP kleiner gleich 0 ist, wird die Lebens-Variable auf False gesetzt
                 player.is_alive = False
         # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
         for enemy in self.enemys:
