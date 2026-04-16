@@ -4,6 +4,7 @@ from cats import *
 from enemys import *
 from boxes import *
 from cursor import Cursor
+from action_sequence import Action
 
 class Cat_Fight:
     """Das Hauptspiel als Klasse"""
@@ -51,6 +52,11 @@ class Cat_Fight:
         # Der Gegner-Auswahl Cursor, der automatisch auf den ersten Gegner steht
         self.attack_cursor = Cursor (self, self.enemys[self.current_target].rect.right +10, self.enemys[self.current_target].rect.centery -10)
 
+        self.battle_sequencer = Action(self) # Klasse, die die gesamte Kampfabfolge (Angriffe, Schaden, Animationen) abhandelt
+        self.current_action = None # In dieser Variable wird die aktuelle Kampfaktion gespeichert
+
+        self.current_effects = pygame.sprite.Group()
+
         self.test_image = pygame.image.load("images/Cat-Healer.png")
         self.image_rect = self.test_image.get_rect()
 
@@ -61,6 +67,7 @@ class Cat_Fight:
         while True:
             self._check_events() # Überprüft, ob in diesem Frame Tasteneingaben stattfinden
             self._check_start_turn() # Überprüft, ob gerade eine neue Runde gestartet ist
+            self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
             self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
             self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
             self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
@@ -72,6 +79,7 @@ class Cat_Fight:
         self._draw_game_fields() # Zeichnet die Schaltflächen 
         self._draw_charakters() # Zeichnet die Spielfiguten
         self._draw_cursor() # Zeichnet die Cursor
+        self._draw_effects() # Zeichnet alle aktiven Effekte
         pygame.display.flip() # Zeichnet den Bildschirm neu
     
     def _draw_charakters(self):
@@ -85,6 +93,8 @@ class Cat_Fight:
             pygame.draw.rect(self.screen,"purple",self.minion_2)
         if self.boss.is_alive == True:
             pygame.draw.rect(self.screen,"brown",self.boss)
+        if self.current_effects:
+            self.current_effects.draw(self.screen)
 
     def _draw_game_fields(self):
         """Zeichnet die Schaltflächen des Kampfbildschirms"""
@@ -105,6 +115,11 @@ class Cat_Fight:
             self.attack_cursor.rect.x = self.enemys[self.current_target].rect.right +10
             self.attack_cursor.rect.y = self.enemys[self.current_target].rect.centery -10
             pygame.draw.rect(self.screen,"red",self.attack_cursor)
+        
+    def _draw_effects(self):
+        """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
+        self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
+
             
     
     def _check_events(self):
@@ -119,8 +134,11 @@ class Cat_Fight:
         """Wenn eine Taste gedrückt wird, wird auf verschiedene Events geprüft"""
         if event.key == pygame.K_q: # Event für Beenden des Spieles (Taste Q)
             sys.exit()
-        if event.key == pygame.K_p: # !TEMPORÄR um die Runden schnell zu skippen!!!
-            self.current_player.action = False
+        if event.key == pygame.K_SPACE: # !TEMPORÄR um die Runden schnell zu skippen!!!
+            if not self.current_action:
+                self.current_player.action = False
+                if self.attack_cursor.active == True:
+                    self._create_attack_cursor()
         if event.key == pygame.K_DOWN:
             # Bewegung nach unten des Cursors der Action-Box (nur möglich, wenn aktueller Kämpfer spielbar und die action-box aktiv ist)
             if self.current_player in self.cat_heroes and self.action_box.active == True:
@@ -151,9 +169,12 @@ class Cat_Fight:
                         print("Items")
                     if self.action_box.current_position == 2:
                         print(self.current_player.actions[2])
-                elif self.attack_cursor.active == True: # Wenn der Angriffscursor aktiviert ist, wird das aktuelle Ziel angegriffen
-                    self.current_player.standard_attack(self.enemys[self.current_target])
-                    self._create_attack_cursor()
+                    # Wenn der Angriffscursor aktiviert ist und bisher noch keine aktuelle Aktion aktiv ist, wird als aktuelle Aktion
+                    # eine Standardattacke festgelegt und auf das aktuelle Ziel angewendet
+                elif self.attack_cursor.active == True and self.current_action == None: 
+                    self.current_action = self.battle_sequencer.default_attack
+                    self._create_attack_cursor() # Der Attack-cursor wird wieder deaktiviert
+                    self.battle_sequencer.action_sequence_active = True # Mit dieser Boolvariable beginnt die Einleitung der Kampfsequenz
         if event.key == pygame.K_ESCAPE: 
             # Falls der Angriffscursor aktiviert ist, wird er durch die Escape-Tatse wieder deaktiviert.
             if self.attack_cursor.active == True:
@@ -196,14 +217,33 @@ class Cat_Fight:
 
     def _check_if_alive(self):
         """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
-        for player in self.fighting_order:
-            if player.current_hp <= 0: # Wenn die aktuelle HP kleiner gleich 0 ist, wird die Lebens-Variable auf False gesetzt
-                player.is_alive = False
+        if self.battle_sequencer.damage_sequence_active == False: # Der Check findet erst statt, wenn der damage auf dem Bildschirm angezeigt wurde
+            for player in self.fighting_order:
+                if player.current_hp <= 0: # Wenn die aktuelle HP kleiner gleich 0 ist, wird die Lebens-Variable auf False gesetzt
+                    player.is_alive = False
         # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
         for enemy in self.enemys:
             if enemy.is_alive == False:
                 self.enemys.remove(enemy)
                 self.fighting_order.remove(enemy)
+    
+    def _check_for_action(self):
+        """Überprüft ob eine Aktion stattfindet"""
+        if self.current_action : # Diese Funktion wird erst ausgeführt, wenn eine aktuelle Aktion festgelegt ist
+            # Solange die Variable für den action-sequencer wahr ist, wird die festgelegete Aktion ausgeführt
+            if self.battle_sequencer.action_sequence_active == True: 
+                self.current_action(self.current_player, self.enemys[self.current_target]) 
+            # Wenn die Aktion beendet ist, wird Sequenz für das Anzeigen der Schadenswerte angezeigt
+                if self.battle_sequencer.action_sequence_active == False:
+                    self.battle_sequencer.damage_sequence_active = True
+            # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
+            # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde
+            if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
+                self.current_action = None
+                self.current_player.action = False
+            
+
+
 
     
     

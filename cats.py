@@ -11,17 +11,23 @@ class Cat(Sprite):
         self.name = name # Name des Charakters
         self.action = True # Bool-Variable, ob der Charakter noch eine Funktion ausführen kann
         self.is_alive = True # Bool-Variable, ob der Charakter noch am Leben ist
+        self.got_damage = 0
 
         self.status_effect = None
 
     def standard_attack(self, target): 
         """Funktion für den einfachen Angriff des Spielers"""
-        damage = self.attack - target.defence # Ermittelt den Schaden
-        if damage < 0: 
-            damage = 0
-        target.current_hp -= damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
+        target.got_damage = self.attack - target.defence # Ermittelt den Schaden
+        if target.got_damage < 0: 
+            target.got_damage = 0
+        target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
         self.action = False # Nach dem Angriff hat der Spieler keine Aktionen mehr
-        print(f"{self.name} hit {target.name}. Damage: {damage}.  HP: {target.current_hp} / {target.max_hp} ")
+        print(f"{self.name} hit {target.name}. Damage: {target.got_damage}.  HP: {target.current_hp} / {target.max_hp} ")
+        target.got_damage = 0
+
+        
+        
+        
 
 class Warrior(Cat):
     """Klasse für den Krieger"""
@@ -36,6 +42,10 @@ class Warrior(Cat):
         self.defence = 150
         self.attack = 200
         self.magic = 50
+
+        self.abilitys = {
+            "attack":{"power": self.attack}
+        }
     
 
 
@@ -53,6 +63,10 @@ class Cleric(Cat):
         self.attack = 70
         self.magic = 150
 
+        self.abilitys = {
+            "attack":{"power": self.attack}
+        }
+
 class Mage(Cat):
     """Klasse für den Zauberer"""
     def __init__(self,ct_game,start_x,start_y, name):
@@ -66,3 +80,7 @@ class Mage(Cat):
         self.defence = 70
         self.attack = 50
         self.magic = 300
+
+        self.abilitys = {
+            "attack":{"power": self.attack}
+        }
