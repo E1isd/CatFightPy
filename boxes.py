@@ -71,16 +71,25 @@ class Enemy_Box(Box):
     """Klasse für die Oberfläche mit den Feindnamen"""
     def __init__(self,cf_game,enemy1,enemy2,enemy3):
         super().__init__(cf_game)
-        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,500,300)
+        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,650,300)
         self.enemies = [enemy1,enemy2,enemy3]
     
     # Schreibt die Gegnernamen
     def draw_enemy_box(self):
-        i = 50
+        i = 100
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+        hp_line = self.font_freetype.render_to(self.screen,(self.rect.x +500, self.rect.y + 50),"HP","black",None,pygame.freetype.STYLE_UNDERLINE) # Zeichnet die Überschrift "HP" und speichert sie als Variable, damit sich anderer Text daran ausrichten können (wichtig für Textzentrierung)
         for enemy in self.enemies:
-            if enemy.is_alive == True: # Schreibt den Gegnernamen nur, wenn der Gegner noch nicht getötet wurde
+            if enemy.is_alive == True: # Schreibt den Gegnernamen und HP nur, wenn der Gegner noch nicht getötet wurde
                 self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +i),f"{enemy.name}","Black")
+                # HP hier als Überschrift, damit sich die HP-Werte daran ausrichten können
+                hp_line_spacing = self.font_freetype.get_rect(f"{enemy.current_hp} ").width
+                self.font_freetype.render_to(self.screen,(hp_line.centerx, self.rect.y +i),f"/ {str(enemy.max_hp)}","black")
+                if enemy.current_hp <= enemy.max_hp * 0.25: # Wenn die HP bei 25% stehen, wird die Schriftfarbe rot. Danach werden die entsprechenden Werte geschrieben.
+                    color = "red"
+                else:
+                    color = "black"
+                self.font_freetype.render_to(self.screen,(hp_line.centerx - hp_line_spacing, self.rect.y +i),f"{str(enemy.current_hp)}",color)
                 i +=50
 
 class Action_Box(Box):

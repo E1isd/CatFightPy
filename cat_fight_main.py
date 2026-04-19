@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 from cats import *
 from enemys import *
 from boxes import *
@@ -12,7 +13,7 @@ class Cat_Fight:
         pygame.init()
         self.screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)# Initialisiert den Bildschirm auf dem das Spiel stattfindet (in Vollbild)
         self.screen_rect = self.screen.get_rect()
-        self.bg_color = "grey" # Variable für Hintergrundfarbe des Blockes
+        self.bg_color = (200, 205, 220) # Variable für Hintergrundfarbe des Blockes in RGB-Werten
         pygame.display.set_caption("Katzen RPG")# Text für die Fensterzeile
 
         self.clock = pygame.time.Clock() #Clock misst die Zeit und ist für die Framerate wichtig
@@ -29,9 +30,10 @@ class Cat_Fight:
 
         # Gruppen
         # Alle Kampfteilnehmer für den Kampf
-        self.fighting_order = [self.warrior_cat, self.minion_1, self.healer_cat,self.minion_2, self.casting_cat, self.boss] 
         self.cat_heroes = [self.warrior_cat,self.casting_cat,self.healer_cat] # Gruppe für die Heldenkatzen
+        random.shuffle(self.cat_heroes) # Die Reihenfolge der Heldenkatzen wird zufällig gemischt, damit die Reihenfolge der Helden in jedem Durchlauf anders ist
         self.enemys = [self.minion_1,self.minion_2,self.boss] # Gruppe für die Gegner
+        self.fighting_order = [self.cat_heroes[0], self.minion_1, self.cat_heroes[1], self.minion_2, self.cat_heroes[2], self.boss]
 
         # Schaltflächen:
         self.cat_box = Cat_Box(self,self.warrior_cat,self.healer_cat,self.casting_cat) # Katzennamen, HP & MP
@@ -72,7 +74,7 @@ class Cat_Fight:
             self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
             self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
             self.clock.tick(60) # Aktualisiert die Uhr und legt so die Framerate fest
-        
+ 
     def _update_screen(self):
         """Zeichnet der Bildschirm mit allen Spielelementen neu"""
         self.screen.fill(self.bg_color) #Füllt den Hintergrund des Spielfensters
@@ -84,15 +86,19 @@ class Cat_Fight:
     
     def _draw_charakters(self):
         """Zeichnet die Spielfiguren"""
-        pygame.draw.rect(self.screen,"red",self.warrior_cat)
-        pygame.draw.rect(self.screen,"white",self.healer_cat)
-        pygame.draw.rect(self.screen,"blue",self.casting_cat)
-        if self.minion_1.is_alive == True:
-            pygame.draw.rect(self.screen,"green",self.minion_1)
+        if self.warrior_cat.is_alive == True: # Wenn die Lebensvariable der jeweiligen Katze auf True steht, wird sie gezeichnet. Ansonsten wird sie nicht mehr gezeichnet, da sie tot ist.
+            pygame.draw.rect(self.screen,"red",self.warrior_cat.rect)
+        if self.healer_cat.is_alive == True:
+            pygame.draw.rect(self.screen,"white",self.healer_cat.rect)
+        if self.casting_cat.is_alive == True:
+            pygame.draw.rect(self.screen,"blue",self.casting_cat.rect)
+            
+        if self.minion_1.is_alive == True: 
+            pygame.draw.rect(self.screen,"green",self.minion_1.rect)
         if self.minion_2.is_alive == True:
-            pygame.draw.rect(self.screen,"purple",self.minion_2)
+            pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
-            pygame.draw.rect(self.screen,"brown",self.boss)
+            pygame.draw.rect(self.screen,"brown",self.boss.rect)
         if self.current_effects:
             self.current_effects.draw(self.screen)
 
@@ -102,7 +108,7 @@ class Cat_Fight:
         self.enemy_box.draw_enemy_box() # Schaltflächen mit den Namen der Gegner
         if self.current_player in self.cat_heroes: # Wenn der aktuelle Kampfteilnehmer spielbar ist, wird die Action-Box gezeichnet
             self.action_box.draw_action_box(self.current_player)
-    
+ 
     def _draw_cursor(self):
         """Zeichnet die Cursor und Marker auf das Spielfeld"""
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt
@@ -115,13 +121,13 @@ class Cat_Fight:
             self.attack_cursor.rect.x = self.enemys[self.current_target].rect.right +10
             self.attack_cursor.rect.y = self.enemys[self.current_target].rect.centery -10
             pygame.draw.rect(self.screen,"red",self.attack_cursor)
-        
+ 
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
         self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
 
-            
-    
+
+
     def _check_events(self):
         """Wartet auf Tasteneingaben vom Spieler"""
         for event in pygame.event.get():
@@ -180,7 +186,7 @@ class Cat_Fight:
             if self.attack_cursor.active == True:
                 self._create_attack_cursor()
                 self.current_target = 0
-            
+
 
     def _check_start_turn(self):
             """Überprüft, ob die Bedingung für den Start der Runde gegeben ist"""
@@ -241,12 +247,7 @@ class Cat_Fight:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
                 self.current_action = None
                 self.current_player.action = False
-            
 
-
-
-    
-    
 
 
 
@@ -261,14 +262,7 @@ if __name__ == "__main__":
 
 
     # Inaktiver Code
-
     def attack(self,cat,enemy):
         damage = cat.attack - enemy.defence
         enemy.current_hp -= damage
         print(f"{cat.name} hit {enemy.name}. Damage: {damage}.  HP: {enemy.current_hp} / {enemy.max_hp} ")
-    
-
-
-        
-
-

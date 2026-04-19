@@ -25,10 +25,6 @@ class Cat(Sprite):
         print(f"{self.name} hit {target.name}. Damage: {target.got_damage}.  HP: {target.current_hp} / {target.max_hp} ")
         target.got_damage = 0
 
-        
-        
-        
-
 class Warrior(Cat):
     """Klasse für den Krieger"""
     def __init__(self,ct_game,start_x,start_y,name):
@@ -46,8 +42,6 @@ class Warrior(Cat):
         self.abilitys = {
             "attack":{"power": self.attack}
         }
-    
-
 
 class Cleric(Cat):
     """Klasse für den Heiler"""
@@ -66,7 +60,6 @@ class Cleric(Cat):
         self.abilitys = {
             "attack":{"power": self.attack}
         }
-
 class Mage(Cat):
     """Klasse für den Zauberer"""
     def __init__(self,ct_game,start_x,start_y, name):

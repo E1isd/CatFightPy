@@ -15,7 +15,7 @@ class Action():
         self.y_pos = 0 # Variable für die y-Bewegung bei Animationen
         self.frame = 0 # Variable für die Frames (Wichtig, um Zeit vergehen zu lassen bei Animationen)
 
-    
+
     def default_attack(self,attacker,target):
         """Funktion für den Standardangriff - !Noch fehlt die Animation!"""
         target.got_damage = attacker.attack - target.defence # Ermittelt den Schaden
@@ -24,7 +24,7 @@ class Action():
         target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
         self.damage_group.add(target) # Das Ziel, welches Schaden genommen hat, wird zur Schadensgruppe zugefügt
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
-           
+ 
 
     def draw_damage_numbers(self):
         """Funktion, die den Schaden als Zahlen auf alle Ziele, die Schaden genommen haben, zeichnet"""
@@ -93,5 +93,3 @@ class Action():
             if player.rect.y >= player.rect.bottom:
                 self.damage_sequence_active = False
                 break
-
-        
