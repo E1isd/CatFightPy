@@ -1,6 +1,7 @@
 import pygame
 import pygame.freetype
 from cursor import Cursor
+from inventory import Inventory
 
 
 class Box():
@@ -10,6 +11,7 @@ class Box():
         self.screen_rect = self.screen.get_rect()
         self.font_freetype = pygame.freetype.SysFont(None,30) # Erschafft eine Font-Klasse mit einer bestimmten Schriftart und Schriftgröße
         self.cursor = Cursor(self,0,0) # Der Cursor für die Box 
+        self.inventory = Inventory(self)
 
 
 
@@ -26,6 +28,7 @@ class Cat_Box(Box):
         i = 100  # Initiator für das Zeichnen der Elemente in der For-Schleife
         color = "black" # Standardfarbe des Textes
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10) # Zeichnet das Rechteck der Oberfläche
+        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10) # Zeichnet den Rand der Box
 
         # Schreibt die beiden Überschriften "HP" und "MP". Sie fungieren gleichzeit als Rechteck-Variablen, damit sich anderer Text daran
         # ausrichten können (wichtig für Textzentrierung)
@@ -78,6 +81,7 @@ class Enemy_Box(Box):
     def draw_enemy_box(self):
         i = 50
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
         for enemy in self.enemies:
             if enemy.is_alive == True: # Schreibt den Gegnernamen nur, wenn der Gegner noch nicht getötet wurde
                 self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +i),f"{enemy.name}","Black")
@@ -95,12 +99,13 @@ class Action_Box(Box):
         self.pos2 = pygame.Rect(self.rect.x +70, self.rect.y + 100, self.width-70,30)
         self.pos3 = pygame.Rect(self.rect.x +70, self.rect.y + 150, self.width-70,30)
         self.postitions = [self.pos1,self.pos2,self.pos3]
-        self.current_position = 0 # Die aktuelle 
+        self.current_position = 0 # Die aktuelle Potition
     
     def draw_action_box(self, cat):
         """Zeichnet die Action Box"""
         # Zeichnet die Aktions-Box und schreibt die einzelnen Aktionsmöglichkeiten (individuell nach Katze)
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
         self.font_freetype.render_to(self.screen,self.pos1,cat.actions[0],"Black")
         self.font_freetype.render_to(self.screen,self.pos2,cat.actions[1],"Black")
         self.font_freetype.render_to(self.screen,self.pos3,cat.actions[2],"Black")
@@ -109,6 +114,68 @@ class Action_Box(Box):
         self.cursor.rect.x = self.postitions[self.current_position].x - 50
         self.cursor.rect.y = self.postitions[self.current_position].y
         pygame.draw.rect(self.screen,"black",self.cursor)
+    
+class Item_Box(Box):
+    """Klasse für die Menüoberfläche der Items"""
+    def __init__(self,cf_game,box):
+        super().__init__(cf_game)
+        self.active = False
+        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,(self.screen_rect.left+10) + (box.rect.x -30),300)
+        self.current_items = []
+        self.postitions = []
+        self.current_position = 0
+    
+    def draw_item_box(self):
+        """Zeichnet die Item-Box"""
+        i = 50
+        self.current_items.clear()
+        self.postitions.clear()
+        pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
+        for item, value in self.inventory.item_dict.items():
+            if value["in_stock"] > 0:
+                self.current_items.append(value)
+        if not self.current_items:
+            self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +50),"Out Of Items","Black")
+        else: 
+            for postion in self.current_items:
+                pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{postion["name"]}","Black")
+                self.postitions.append(pos)
+                i+=50
+            self.cursor.rect.x = self.postitions[self.current_position].x - 50
+            self.cursor.rect.y = self.postitions[self.current_position].y
+            pygame.draw.rect(self.screen,"black",self.cursor)
+            
+  
+
+
+class Ability_Box(Box):
+    """Klasse für die Menüoberfläche der Items"""
+    def __init__(self,cf_game,box):
+        super().__init__(cf_game)
+        self.active = False
+        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,(self.screen_rect.left+10) + (box.rect.x -30),300)
+    
+    def draw_ability_box(self):
+        """Zeichnet die Item-Box"""
+        pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
+
+class Tooltp_Box(Box):
+    """Klasse für die Tooltip-Box"""
+    def __init__(self,cf_game):
+        super().__init__(cf_game)
+        self.active = False
+        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.top+5,self.screen_rect.width -20, 70)
+
+    def draw_tooltip_box(self,message):
+        "Zeichnet die Tooltip-Box, wenn benötigt"
+        if self.active == True:
+            message_width = self.font_freetype.get_rect(message).width
+            message_height = self.font_freetype.get_rect(message).height
+            pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+            pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
+            self.font_freetype.render_to(self.screen,(self.rect.centerx - message_width/2 , self.rect.centery - message_height/2),message,"Black")
 
 
         

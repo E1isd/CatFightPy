@@ -1,0 +1,12 @@
+import pygame
+
+class Inventory:
+    """Hauptklasse für das Inventar"""
+    def __init__(self,cf_games):
+        self.screen = cf_games.screen
+        
+        self.item_dict = {
+            "Potion":{"name":"Potion","in_stock":3,"action":"heal","value":50,"tooltip":"Heals target cat"},
+            "Antidote":{"name":"Antidote","in_stock":2,"action":"cure","value":0,"tooltip":"Cures poision"},
+            "Catnip":{"name":"Catnip","in_stock":1,"action":"revive","value":30,"tooltip":"Revives fallen cat"}
+        }

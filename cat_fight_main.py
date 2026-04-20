@@ -37,6 +37,11 @@ class Cat_Fight:
         self.cat_box = Cat_Box(self,self.warrior_cat,self.healer_cat,self.casting_cat) # Katzennamen, HP & MP
         self.enemy_box = Enemy_Box(self,self.boss,self.minion_1,self.minion_2) # Gegnernamen
         self.action_box = Action_Box(self,self.cat_box) # Box mit den Aktionsmöglichkeiten (Angriff etc.)
+        self.item_box = Item_Box(self,self.action_box)
+        self.ability_box = Ability_Box(self,self.action_box)
+        self.tooltip_box = Tooltp_Box(self)
+
+        self.tooltip_message = ""
 
         # Für das Rundensystem
         self.turn_timer = 0
@@ -85,8 +90,8 @@ class Cat_Fight:
     def _draw_charakters(self):
         """Zeichnet die Spielfiguren"""
         pygame.draw.rect(self.screen,"red",self.warrior_cat)
-        pygame.draw.rect(self.screen,"white",self.healer_cat)
         pygame.draw.rect(self.screen,"blue",self.casting_cat)
+        self.screen.blit(self.healer_cat.image, (self.healer_cat.x_position,self.healer_cat.y_position))
         if self.minion_1.is_alive == True:
             pygame.draw.rect(self.screen,"green",self.minion_1)
         if self.minion_2.is_alive == True:
@@ -102,7 +107,14 @@ class Cat_Fight:
         self.enemy_box.draw_enemy_box() # Schaltflächen mit den Namen der Gegner
         if self.current_player in self.cat_heroes: # Wenn der aktuelle Kampfteilnehmer spielbar ist, wird die Action-Box gezeichnet
             self.action_box.draw_action_box(self.current_player)
-    
+        if self.item_box.active == True:
+            self.item_box.draw_item_box()
+        if self.ability_box.active == True:
+            self.ability_box.draw_ability_box()
+        self.get_tooltip()
+        self.tooltip_box.draw_tooltip_box(self.tooltip_message)
+        
+
     def _draw_cursor(self):
         """Zeichnet die Cursor und Marker auf das Spielfeld"""
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt
@@ -119,6 +131,14 @@ class Cat_Fight:
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
         self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
+
+    def get_tooltip(self):
+        """Funktion, um die Nachricht für die Tooltip-Box auszulesen"""
+        if self.item_box.active == True:
+            self.tooltip_message = self.item_box.current_items[self.item_box.current_position]["tooltip"]
+        else:
+            self.tooltip_message = ""
+        
 
             
     
@@ -139,47 +159,66 @@ class Cat_Fight:
                 self.current_player.action = False
                 if self.attack_cursor.active == True:
                     self._create_attack_cursor()
-        if event.key == pygame.K_DOWN:
-            # Bewegung nach unten des Cursors der Action-Box (nur möglich, wenn aktueller Kämpfer spielbar und die action-box aktiv ist)
+        # Alle der folgenden Tasteneingaben sind nur möglich, wenn gerade keine Aktionssequenz abgespielt wird!
+        if event.key == pygame.K_DOWN and not self.current_action:
+            # Bewegung nach unten des Cursors der Action-Box (nur möglich, wenn aktueller Kämpfer spielbar und die action-box aktiv ist) 
             if self.current_player in self.cat_heroes and self.action_box.active == True:
                 if self.action_box.current_position < len(self.action_box.postitions)-1:
                     self.action_box.current_position +=1
+            elif self.current_player in self.cat_heroes and self.item_box.active == True:
+                if self.item_box.current_position < len(self.item_box.postitions)-1:
+                    self.item_box.current_position +=1
+            
             # Wenn hingegen der Attack-Cursor aktiv ist, wird dieser nach unten bewegt (die Reihenfolge beginnt wieder von vorne, wenn
             # die Anzahl der möglichen Gegner überschritten wurde.)
             elif self.attack_cursor.active == True:
                 self.current_target +=1
                 if self.current_target > len(self.enemys) -1:
                     self.current_target = 0
-        if event.key == pygame.K_UP:
+        if event.key == pygame.K_UP and not self.current_action:
             # Bewegung nach oben des Cursors der Action-Box (nur möglich, wenn aktueller Kämpfer spielbar und die action-box aktiv ist)
             if self.current_player in self.cat_heroes and self.action_box.active == True:
                 if self.action_box.current_position > 0:
                     self.action_box.current_position -=1
+            elif self.current_player in self.cat_heroes and self.item_box.active == True:
+                if self.item_box.current_position > 0:
+                    self.item_box.current_position -=1
             # Wenn hingegen der Attack-Cursor aktiv ist, wird dieser nach oben bewegt (die Reihenfolge beginnt wieder von hinten, wenn
             # 0 erreicht wurde).
             elif self.attack_cursor.active == True:
                 self.current_target -= 1
                 if self.current_target < 0:
                     self.current_target = len(self.enemys) -1
-        if event.key == pygame.K_RETURN:
+        if event.key == pygame.K_RETURN and not self.current_action:
                 if self.current_player in self.cat_heroes and self.action_box.active == True:
                     if self.action_box.current_position == 0: # Befehl, um den Angriffscursor zu aktivieren
                         self._create_attack_cursor()
                     if self.action_box.current_position == 1:
-                        print("Items")
+                        self.item_box.active = True
+                        self.tooltip_box.active = True
+                        self.action_box.active = False
                     if self.action_box.current_position == 2:
-                        print(self.current_player.actions[2])
+                        self.ability_box.active = True
+                        self.action_box.active = False
                     # Wenn der Angriffscursor aktiviert ist und bisher noch keine aktuelle Aktion aktiv ist, wird als aktuelle Aktion
                     # eine Standardattacke festgelegt und auf das aktuelle Ziel angewendet
                 elif self.attack_cursor.active == True and self.current_action == None: 
                     self.current_action = self.battle_sequencer.default_attack
                     self._create_attack_cursor() # Der Attack-cursor wird wieder deaktiviert
                     self.battle_sequencer.action_sequence_active = True # Mit dieser Boolvariable beginnt die Einleitung der Kampfsequenz
-        if event.key == pygame.K_ESCAPE: 
+        if event.key == pygame.K_ESCAPE and not self.current_action: 
             # Falls der Angriffscursor aktiviert ist, wird er durch die Escape-Tatse wieder deaktiviert.
             if self.attack_cursor.active == True:
                 self._create_attack_cursor()
                 self.current_target = 0
+            if self.item_box.active == True:
+                self.item_box.active = False
+                self.action_box.active = True
+                self.item_box.current_position = 0
+                self.tooltip_box.active = False
+            if self.ability_box.active == True:
+                self.ability_box.active = False
+                self.action_box.active = True
             
 
     def _check_start_turn(self):

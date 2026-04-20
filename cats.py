@@ -54,7 +54,11 @@ class Cleric(Cat):
     def __init__(self,ct_game,start_x,start_y,name):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Item","Prayer"]
-        self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
+        
+        self.image = pygame.image.load("images/Cat-Healer-FINAL2.png")
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x_position
+        self.rect.y = self.y_position
         self.current_hp = 150
         self.max_hp = 150
         self.current_mp = 150
