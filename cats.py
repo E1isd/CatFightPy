@@ -50,6 +50,7 @@ class Cleric(Cat):
         self.actions = ["Attack","Item","Prayer"]
         
         self.image = pygame.image.load("images/Cat-Healer.png")
+        self.image = pygame.transform.scale(self.image, (150, 150))
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
         self.rect.y = self.y_position

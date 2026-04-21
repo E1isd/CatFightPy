@@ -152,7 +152,7 @@ class Item_Box(Box):
             self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +50),"Out Of Items","Black")
         else: 
             for postion in self.current_items:
-                pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{postion["name"]}","Black")
+                pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{postion['name']}","Black")
                 self.postitions.append(pos)
                 i+=50
             self.cursor.rect.x = self.postitions[self.current_position].x - 50
