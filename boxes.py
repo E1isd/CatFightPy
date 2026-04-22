@@ -19,7 +19,7 @@ class Cat_Box(Box):
     """Klasse für die Oberfläche mit den Lebens- und Manaleisten der Katze"""
     def __init__(self,cf_game,cat1,cat2,cat3): # Nimmt als Parameter die drei Katzen
         super().__init__(cf_game)
-        self.rect = pygame.Rect(self.screen_rect.bottom ,self.screen_rect.bottom -310,800,300) # Erschafft das Rechteck der Schaltfläche
+        self.rect = pygame.Rect(self.screen_rect.right-810 ,self.screen_rect.bottom -310,800,300) # Erschafft das Rechteck der Schaltfläche
         self.cats = [cat1,cat2,cat3] # Liste mit den drei Katzen
 
         
@@ -159,8 +159,6 @@ class Item_Box(Box):
             self.cursor.rect.y = self.postitions[self.current_position].y
             pygame.draw.rect(self.screen,"black",self.cursor)
             
-  
-
 
 class Ability_Box(Box):
     """Klasse für die Menüoberfläche der Items"""
@@ -189,6 +187,28 @@ class Tooltip_Box(Box):
             pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
             pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
             self.font_freetype.render_to(self.screen,(self.rect.centerx - message_width/2 , self.rect.centery - message_height/2),message,"Black")
+
+class Help_Box(Box):
+    "Zeichnet die Hilfs-Box, die die Steuerung anzeigt"
+    def __init__(self,cf_game,box):
+        super().__init__(cf_game)
+        self.active = False
+        self.height = 275
+        self.rect = pygame.Rect(box.right -475, self.screen_rect.centery - self.height , 475, self.height )
+    
+    def draw_help_box(self):
+            char_length = self.font_freetype.get_rect("UP/DOWN").width
+            pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+            pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
+            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 50),"UP/DOWN:","Black")
+            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 50),"Move Cursor","Black")
+            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 100),"ENTER:","Black")
+            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 100),"Choose/Action","Black")
+            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 150),"ESC:","Black")
+            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 150),"Go Back","Black")
+            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 200),"Q:","Black")
+            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 200),"Quit Game","Black")
+
 
 
         
