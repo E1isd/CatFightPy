@@ -86,6 +86,10 @@ class Cat_Fight:
             self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
             self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
             self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
+            
+            if isinstance(self.current_player, Cleric): # Wenn der aktuelle Spieler der Cleric ist, wird die Sprite-Animation aktualisiert
+                self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation, mit der Angabe, dass der Charakter ausgewählt ist (für die Idle-Animation)
+            
             self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
             self.clock.tick(60) # Aktualisiert die Uhr und legt so die Framerate fest
  

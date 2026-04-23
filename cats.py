@@ -49,7 +49,7 @@ class Cleric(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Item","Prayer"]
         
-        self.image = pygame.image.load("images/Cat-Healer.png")
+        self.image = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png")
         self.image = pygame.transform.scale(self.image, (150, 150))
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
@@ -61,7 +61,35 @@ class Cleric(Cat):
         self.defence = 70
         self.attack = 70
         self.magic = 150
+        #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
+        self.sprites = []
+        sprite1 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png")
+        sprite1 = pygame.transform.scale(sprite1, (150, 150))
+        self.sprites.append(sprite1)
+        
+        sprite2 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle2.png")
+        sprite2 = pygame.transform.scale(sprite2, (150, 150))
+        self.sprites.append(sprite2)
+        
+        self.current_sprite = 0
+        self.image = self.sprites[self.current_sprite]
+        
+        # Timer für die Sprite-Animation (200ms)
+        self.animation_timer = 0
+        self.animation_delay = 200  # 200ms Zeitabstand
 
+    def update(self, is_selected=False):
+        """Update-Methode mit zeitlich gesteuertem Sprite-Wechsel"""
+        if is_selected:
+            # Nur wenn der Charakter ausgewählt ist, wird die Animation abgespielt
+            current_time = pygame.time.get_ticks()
+            if current_time - self.animation_timer >= self.animation_delay:
+                self.animation_timer = current_time
+                self.current_sprite += 1
+                if self.current_sprite >= len(self.sprites):
+                    self.current_sprite = 0
+                self.image = self.sprites[self.current_sprite]
+        
         self.abilitys = {
             "attack":{"power": self.attack}
         }
