@@ -194,7 +194,6 @@ class Cat_Fight:
                 self.current_target +=1
                 if self.current_target > len(self.target_group) -1:
                     self.current_target = 0
-                print(self.current_target)
         if event.key == pygame.K_UP and not self.current_action: # Bewegung des Cursors nach oben
             if self.action_box.active == True: # In der Action-Box
                 if self.action_box.current_position > 0:
@@ -208,7 +207,6 @@ class Cat_Fight:
                 self.current_target -= 1
                 if self.current_target < 0:
                     self.current_target = len(self.target_group) -1
-                print(self.current_target)
         if event.key == pygame.K_RETURN and not self.current_action:
                 if self.current_player in self.cat_heroes and self.action_box.active == True:
                     if self.action_box.current_position == 0: # Aktiviert den Cursor für die Stadtardattacke
@@ -334,9 +332,3 @@ if __name__ == "__main__":
 
 
 
-
-    # Inaktiver Code
-    def attack(self,cat,enemy):
-        damage = cat.attack - enemy.defence
-        enemy.current_hp -= damage
-        print(f"{cat.name} hit {enemy.name}. Damage: {damage}.  HP: {enemy.current_hp} / {enemy.max_hp} ")

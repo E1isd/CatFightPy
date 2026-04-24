@@ -25,14 +25,19 @@ class Action():
  
     def use(self, target, item):
         """Funktion für das Benutzen von Items"""
+        # Wenn das Item zur Kategorie der Heilungsitems gehört, wird das Ziel um dem im Item-Dictonary gespeicherten Wert geheilt
         if item["action"] == "heal":
             target.got_heal = item["value"]
             self.calculate_damage_or_heal(target,self.healed_group)
             item["in_stock"] -= 1
+        # Wenn das Item zur Kategorie "Cure" gehört, wird das Ziel von dem Status-effect befreit, der im Item-Dictonary gespeichert ist 
+        # - Falls das Ziel diesen Status Effekt überhaupt hat
         elif item["action"] == "cure":
-            if target.status_effect == "poison":
+            if target.status_effect == item["status_effect"]:
                 target.status_effect = None
             item["in_stock"] -=1
+        # Wenn das Item zur Kategorie "Revive" gehört, wird das Ziel wiederbelebt und um den im Item-Dictonayry gespeicherten Wert geheilt -
+        # die Heilung findet allerdings nur statt, wenn das Ziel auch wiederbelebt wurde
         elif item["action"] == "revive":
             if target.is_alive == False:
                 target.is_alive = True
@@ -42,18 +47,18 @@ class Action():
         self.action_sequence_active = False
 
     def calculate_damage_or_heal(self,target,group):
-        """Funktion, die den Schaden ermittelt"""
+        """Funktion, die den Schaden oder den Heilwert ermittelt"""
         if group == self.damage_group:
             if target.got_damage < 0: # Wenn der Schaden kleiner als 0 ist, wird er auf 0 zurückgesetzt
                 target.got_damage = 0
             target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
             self.damage_group.add(target) # Das Ziel, welches Schaden genommen hat, wird zur Schadensgruppe zugefügt
         if group == self.healed_group:
-            if target.is_alive:
+            if target.is_alive: # Heilung nur, wenn das Ziel auch am Leben ist
                 target.current_hp += target.got_heal
-                if target.current_hp > target.max_hp:
-                    target.current_hp = target.max_hp
-                self.healed_group.add(target)
+                if target.current_hp > target.max_hp: # Wenn nach der Heilung der Wert für die aktuellen HP größer ist als max_hp...
+                    target.current_hp = target.max_hp # ... wird der Wert für current_hp auf max_hp gesetzt
+                self.healed_group.add(target)  # Das Ziel, welches geheilt wurde, wird zur Heilungsgruppe hinzugefügt
 
 
     def draw_damage_numbers(self):
@@ -118,16 +123,3 @@ class Action():
                 self.x_pos = 0
                 self.frame = 0
 
-    def show_damage(self,group):
-        """Animation, die den Schaden anzeigt"""
-        if self.damage_sequence_active == True and not self.damage_group:
-            for player in group:
-                if player.got_damage > 0:
-                    self.damage_group.add(player)
-                    print(f"{player} added")
-        self.x_pos +=1
-        self.frame +=1
-        for player in group:
-            if player.rect.y >= player.rect.bottom:
-                self.damage_sequence_active = False
-                break

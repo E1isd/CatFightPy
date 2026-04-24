@@ -12,6 +12,6 @@ class Inventory:
     # für die Tooltip Box gespeichert.
         self.item_dict = {
             "Potion":{"name":"Potion","in_stock":3,"action":"heal","value":50,"tooltip":"Heals target cat"},
-            "Antidote":{"name":"Antidote","in_stock":2,"action":"cure","value":0,"tooltip":"Cures poision"},
+            "Antidote":{"name":"Antidote","in_stock":2,"action":"cure","status_effect":"poison","value":0,"tooltip":"Cures poision"},
             "Catnip":{"name":"Catnip","in_stock":1,"action":"revive","value":30,"tooltip":"Revives fallen cat"}
         }
