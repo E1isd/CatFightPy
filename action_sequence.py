@@ -10,6 +10,7 @@ class Action():
         self.damage_sequence_active = False # Bool Variable für die aktuelle Schadens-Sequenz
         self.font_freetype = pygame.freetype.SysFont(None,30) # Variable für die Schrift
         self.damage_group = pygame.sprite.Group() # Gruppe für alle Kampfteilnehmer, die Schaden erlitten haben
+        self.healed_group = pygame.sprite.Group() # Gruppe für alle Kampfteilnehmer, die geheilt wurden
         self.animation_group = pygame.sprite.Group()
         self.x_pos = 0 # Variable für die x-Bewegung bei Animationen
         self.y_pos = 0 # Variable für die y-Bewegung bei Animationen
@@ -19,15 +20,44 @@ class Action():
     def default_attack(self,attacker,target):
         """Funktion für den Standardangriff - !Noch fehlt die Animation!"""
         target.got_damage = attacker.attack - target.defence # Ermittelt den Schaden
-        if target.got_damage < 0: # Wenn der Schaden kleiner als 0 ist, wird er auf 0 zurückgesetzt
-            target.got_damage = 0
-        target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
-        self.damage_group.add(target) # Das Ziel, welches Schaden genommen hat, wird zur Schadensgruppe zugefügt
+        self.calculate_damage_or_heal(target,self.damage_group)
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
  
+    def use(self, target, item):
+        """Funktion für das Benutzen von Items"""
+        if item["action"] == "heal":
+            target.got_heal = item["value"]
+            self.calculate_damage_or_heal(target,self.healed_group)
+            item["in_stock"] -= 1
+        elif item["action"] == "cure":
+            if target.status_effect == "poison":
+                target.status_effect = None
+            item["in_stock"] -=1
+        elif item["action"] == "revive":
+            if target.is_alive == False:
+                target.is_alive = True
+                target.got_heal = item["value"]
+                self.calculate_damage_or_heal(target,self.healed_group)
+                item["in_stock"] -=1
+        self.action_sequence_active = False
+
+    def calculate_damage_or_heal(self,target,group):
+        """Funktion, die den Schaden ermittelt"""
+        if group == self.damage_group:
+            if target.got_damage < 0: # Wenn der Schaden kleiner als 0 ist, wird er auf 0 zurückgesetzt
+                target.got_damage = 0
+            target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
+            self.damage_group.add(target) # Das Ziel, welches Schaden genommen hat, wird zur Schadensgruppe zugefügt
+        if group == self.healed_group:
+            if target.is_alive:
+                target.current_hp += target.got_heal
+                if target.current_hp > target.max_hp:
+                    target.current_hp = target.max_hp
+                self.healed_group.add(target)
+
 
     def draw_damage_numbers(self):
-        """Funktion, die den Schaden als Zahlen auf alle Ziele, die Schaden genommen haben, zeichnet"""
+        """Funktion, die den Schaden oder Heilung als Zahlen auf alle betroffenen Ziele zeichnet"""
         if self.damage_sequence_active == True: 
                 for player in self.damage_group:
                     # Ermittelt Höhe und Länge des Schriftzuges, um es möglichst zentral zu zeichnen
@@ -35,7 +65,14 @@ class Action():
                     string_height = self.font_freetype.get_rect(f"{player.got_damage} ").height 
                     # Zeichnet den aktuellen Schadenwert möglichst zentral auf das Ziel
                     self.font_freetype.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2)),\
-                                                 f"{player.got_damage}", size=30+self.x_pos)  
+                                                 f"{player.got_damage}", size=30+self.x_pos) 
+                for player in self.healed_group:
+                    # Ermittelt Höhe und Länge des Schriftzuges, um es möglichst zentral zu zeichnen
+                    string_lenght = self.font_freetype.get_rect(f"{player.got_heal} ").width
+                    string_height = self.font_freetype.get_rect(f"{player.got_heal} ").height 
+                    # Zeichnet den aktuellen Heilungswert möglichst zentral auf das Ziel
+                    self.font_freetype.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2)),\
+                                                 f"{player.got_heal}","green", size=30+self.x_pos) 
                 # Animation: Mithilfe der x_pos-Variable, die hier nicht als x-position genommen wird, sondern als Aushilfsvariable, wird die
                 # Schriftgröße pro Frame verändert. Zuerst wird sie vergrößert, ab einer bestimmten Anzahl Frames dann wieder verkleinert und
                 # zurück. So entsteht der Effekt eines "Aufleuchtens".             
@@ -54,6 +91,7 @@ class Action():
                     for player in self.damage_group:
                         player.got_damage = 0
                     self.damage_group.empty()
+                    self.healed_group.empty()
 
 
 # Inaktiver Coder

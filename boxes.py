@@ -11,7 +11,7 @@ class Box():
         self.screen_rect = self.screen.get_rect()
         self.font_freetype = pygame.freetype.SysFont(None,30) # Erschafft eine Font-Klasse mit einer bestimmten Schriftart und Schriftgröße
         self.cursor = Cursor(self,0,0) # Der Cursor für die Box 
-        self.inventory = Inventory(self)
+
 
 
 
@@ -138,24 +138,26 @@ class Item_Box(Box):
         self.postitions = []
         self.current_position = 0
     
-    def draw_item_box(self):
+    def draw_item_box(self, inventory):
         """Zeichnet die Item-Box"""
         i = 50
         self.current_items.clear()
         self.postitions.clear()
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
         pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
-        for item, value in self.inventory.item_dict.items():
+        for item, value in inventory.item_dict.items(): # Es wird ermittelt, welches Item im aktuellen Inventar vorhanden ist("in_stock")
             if value["in_stock"] > 0:
-                self.current_items.append(value)
-        if not self.current_items:
+                self.current_items.append(value) # Items, bei denen mindestens eine Einheit vorhanden ist, landen in der current_items Liste
+        if not self.current_items: # Wenn die current_items Liste leer ist, wird eine entsprechende Nachricht angezeigt
             self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +50),"Out Of Items","Black")
         else: 
-            for postion in self.current_items:
+            for postion in self.current_items: # Schreibt alle Items aus current_items mit Name und Anzahl in die Item-Box
                 pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{postion['name']}","Black")
-                self.postitions.append(pos)
+                self.postitions.append(pos) # Fügt das Rechteck des geschriebenen Items zur Positions-Liste hinzu (für dei Position des Cursors)
+                self.font_freetype.render_to(self.screen,(self.rect.x +300, self.rect.y +i),f"{postion['in_stock']}","Black")
                 i+=50
-            self.cursor.rect.x = self.postitions[self.current_position].x - 50
+            # Setzt den Cursor der Item-Box an die aktuelle Stelle und zeichnet ihn
+            self.cursor.rect.x = self.postitions[self.current_position].x - 50 
             self.cursor.rect.y = self.postitions[self.current_position].y
             pygame.draw.rect(self.screen,"black",self.cursor)
             
@@ -172,6 +174,8 @@ class Ability_Box(Box):
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
         pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
 
+
+
 class Tooltip_Box(Box):
     """Klasse für die Tooltip-Box"""
     def __init__(self,cf_game):
@@ -179,9 +183,10 @@ class Tooltip_Box(Box):
         self.active = False
         self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.top+5,self.screen_rect.width -20, 70)
 
-    def draw_tooltip_box(self,message):
+    def draw_tooltip_box(self,message): # Als Parameter wird hier eine message entgegengenommen, die die variable Message der Tooltip-Box anzeigt
         "Zeichnet die Tooltip-Box, wenn benötigt"
         if self.active == True:
+            # Ermittelt die Höhe und Breite der Message, damit sie zentriert angezeigt werden kann:
             message_width = self.font_freetype.get_rect(message).width
             message_height = self.font_freetype.get_rect(message).height
             pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
@@ -194,20 +199,33 @@ class Help_Box(Box):
         super().__init__(cf_game)
         self.active = False
         self.height = 275
-        self.rect = pygame.Rect(box.right -475, self.screen_rect.centery - self.height , 475, self.height )
+        self.font_freetype_small = pygame.freetype.SysFont(None,20)
+        self.rect = pygame.Rect(box.right -350, self.screen_rect.centery - self.height , 350, self.height )
+        self.small_rect = pygame.Rect(self.rect.right - 55, self.rect.y -55, 50,50) # Ein kleines extra Rechteck
     
     def draw_help_box(self):
-            char_length = self.font_freetype.get_rect("UP/DOWN").width
-            pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
-            pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
-            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 50),"UP/DOWN:","Black")
-            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 50),"Move Cursor","Black")
-            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 100),"ENTER:","Black")
-            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 100),"Choose/Action","Black")
-            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 150),"ESC:","Black")
-            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 150),"Go Back","Black")
-            self.font_freetype.render_to(self.screen,(self.rect.x + 50, self.rect.y + 200),"Q:","Black")
-            self.font_freetype.render_to(self.screen,((self.rect.x + 50) + (char_length + 50), self.rect.y + 200),"Quit Game","Black")
+            """Zeichnet die Hilfe-Box"""
+            pygame.draw.rect(self.screen,"white",self.small_rect,border_radius=10)
+            pygame.draw.rect(self.screen,"black",self.small_rect,width=3,border_radius=10)
+            # Zeichnet das kleine Extra-Dreieck, egal ob die Hilfe-Box aktiv ist oder nicht:
+            self.font_freetype.render_to(self.screen,(self.small_rect.centerx -9, self.small_rect.centery -10),"H","Black")
+            help_length = self.font_freetype_small.get_rect("Press To Show Help").width + 5
+
+            if self.active == True: # Zeichnet die Hilfs-Box wenn sie aktiviert ist
+                self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Hide Help","Black")
+                char_length = self.font_freetype_small.get_rect("UP/DOWN").width
+                pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
+                pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
+                self.font_freetype_small.render_to(self.screen,(self.rect.x + 40, self.rect.y + 50),"UP/DOWN:","Black")
+                self.font_freetype_small.render_to(self.screen,((self.rect.x + 40) + (char_length + 30), self.rect.y + 50),"Move Cursor","Black")
+                self.font_freetype_small.render_to(self.screen,(self.rect.x + 40, self.rect.y + 100),"ENTER:","Black")
+                self.font_freetype_small.render_to(self.screen,((self.rect.x + 40) + (char_length + 30), self.rect.y + 100),"Choose/Action","Black")
+                self.font_freetype_small.render_to(self.screen,(self.rect.x + 40, self.rect.y + 150),"ESC:","Black")
+                self.font_freetype_small.render_to(self.screen,((self.rect.x + 40) + (char_length + 30), self.rect.y + 150),"Go Back","Black")
+                self.font_freetype_small.render_to(self.screen,(self.rect.x + 40, self.rect.y + 200),"Q:","Black")
+                self.font_freetype_small.render_to(self.screen,((self.rect.x + 40) + (char_length + 30), self.rect.y + 200),"Quit Game","Black")
+            else: # Zeichnet nur einen Text, wenn die Hilfs-Box nicht aktiviert ist
+                self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Show Help","Black")
 
 
 

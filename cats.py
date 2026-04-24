@@ -11,19 +11,12 @@ class Cat(Sprite):
         self.name = name # Name des Charakters
         self.action = True # Bool-Variable, ob der Charakter noch eine Funktion ausführen kann
         self.is_alive = True # Bool-Variable, ob der Charakter noch am Leben ist
-        self.got_damage = 0
+        self.got_damage = 0 # Variable für den Schaden, den ein Charakter erlitten hat
+        self.got_heal = 0 # Variable für die Heilung, die ein Charakter erhalten hat
 
-        self.status_effect = None
+        self.status_effect = None # Bool-Variable, die überprüft, ob die Katze einen Statuseffekt hat
 
-    def standard_attack(self, target): 
-        """Funktion für den einfachen Angriff des Spielers"""
-        target.got_damage = self.attack - target.defence # Ermittelt den Schaden
-        if target.got_damage < 0: 
-            target.got_damage = 0
-        target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
-        self.action = False # Nach dem Angriff hat der Spieler keine Aktionen mehr
-        print(f"{self.name} hit {target.name}. Damage: {target.got_damage}.  HP: {target.current_hp} / {target.max_hp} ")
-        target.got_damage = 0
+
 
 class Warrior(Cat):
     """Klasse für den Krieger"""
@@ -31,7 +24,7 @@ class Warrior(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Items","Skills"]
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
-        self.current_hp = 300
+        self.current_hp = 200
         self.max_hp = 300
         self.current_mp = 25
         self.max_mp = 25
@@ -61,6 +54,11 @@ class Cleric(Cat):
         self.defence = 70
         self.attack = 70
         self.magic = 150
+
+        self.abilitys = {
+            "attack":{"power": self.attack}
+        }
+
         #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
         self.sprites = []
         sprite1 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png")
@@ -90,16 +88,14 @@ class Cleric(Cat):
                     self.current_sprite = 0
                 self.image = self.sprites[self.current_sprite]
         
-        self.abilitys = {
-            "attack":{"power": self.attack}
-        }
+
 class Mage(Cat):
     """Klasse für den Zauberer"""
     def __init__(self,ct_game,start_x,start_y, name):
         super().__init__(ct_game,start_x,start_y, name)
         self.actions = ["Attack","Item","Magic"]
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
-        self.current_hp = 150
+        self.current_hp = 0
         self.max_hp = 150
         self.current_mp = 250
         self.max_mp = 250
@@ -110,3 +106,18 @@ class Mage(Cat):
         self.abilitys = {
             "attack":{"power": self.attack}
         }
+
+
+
+
+# Inaktiver Code
+
+    def standard_attack(self, target): 
+        """Funktion für den einfachen Angriff des Spielers"""
+        target.got_damage = self.attack - target.defence # Ermittelt den Schaden
+        if target.got_damage < 0: 
+            target.got_damage = 0
+        target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
+        self.action = False # Nach dem Angriff hat der Spieler keine Aktionen mehr
+        print(f"{self.name} hit {target.name}. Damage: {target.got_damage}.  HP: {target.current_hp} / {target.max_hp} ")
+        target.got_damage = 0

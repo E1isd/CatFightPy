@@ -37,12 +37,15 @@ class Cat_Fight:
         self.minion_1 = Poison_Minion(self,650,300, "Cat-Minion 1")
         self.minion_2 = Rage_Minion (self,650,600, "Cat-Minion 2")
 
+        self.current_inventory = Inventory(self) # Klasse für das aktuelle Inventar
+
         # Gruppen
         # Alle Kampfteilnehmer für den Kampf
-        self.cat_heroes = [self.warrior_cat,self.casting_cat,self.healer_cat] # Gruppe für die Heldenkatzen
+        self.cat_heroes = [self.warrior_cat,self.healer_cat,self.casting_cat] # Gruppe für die Heldenkatzen
         random.shuffle(self.cat_heroes) # Die Reihenfolge der Heldenkatzen wird zufällig gemischt, damit die Reihenfolge der Helden in jedem Durchlauf anders ist
         self.enemys = [self.minion_1,self.minion_2,self.boss] # Gruppe für die Gegner
         self.fighting_order = [self.cat_heroes[0], self.minion_1, self.cat_heroes[1], self.minion_2, self.cat_heroes[2], self.boss]
+        self.cat_heroes = [self.warrior_cat,self.healer_cat,self.casting_cat] # Nach dem zufälligen Mischen, wird die Reihenfolge wieder normal gesetzt. Wichtig für die korrekte Cursor Auswahl
         self.target_group = [] # Die aktuelle angewählte Gruppe, wichtig für die Erschaffung des Auswähl-Cursors und für Fähigkeitssequenzen
 
         # Schaltflächen:
@@ -52,7 +55,7 @@ class Cat_Fight:
         self.item_box = Item_Box(self,self.action_box) # Box, die die verfügbaren Items anzeigt
         self.ability_box = Ability_Box(self,self.action_box) # Box, die die verfügbaren Abilitys anzeigt
         self.tooltip_box = Tooltip_Box(self) # Box, die Abilitys und Gegnerangriffe beschreibt 
-        self.help_box = Help_Box(self,self.cat_box.rect)
+        self.help_box = Help_Box(self,self.cat_box.rect) # Box, die Hilfe für die Steuerung anzeigt
 
         self.tooltip_message = "" # Die Variable für den angezeigten Text der Tooltip-Box
 
@@ -62,8 +65,6 @@ class Cat_Fight:
         self.next_turn = False # Die Bool-Variable, die überprüft, ob die Bedingungen für eine nächste Runde gegeben ist
         
         
-
-
         self.current_target = 0 # Die int-Variable für die Auswahl des aktuellen Ziels
         # Cursor:
         self.player_cursor = Cursor(self,self.current_player.rect.centerx - 10,self.current_player.rect.y -30) # Cursor über aktuellem Kampfteilnehmer
@@ -73,7 +74,7 @@ class Cat_Fight:
         self.battle_sequencer = Action(self) # Klasse, die die gesamte Kampfabfolge (Angriffe, Schaden, Animationen) abhandelt
         self.current_action = None # In dieser Variable wird die aktuelle Kampfaktion gespeichert
 
-        self.current_effects = pygame.sprite.Group() # !!! Aktuelle noch inaktiv !!!
+        self.current_effects = pygame.sprite.Group() # !!! Aktuell noch inaktiv !!!
 
 
 
@@ -86,10 +87,6 @@ class Cat_Fight:
             self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
             self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
             self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
-            
-            if isinstance(self.current_player, Cleric): # Wenn der aktuelle Spieler der Cleric ist, wird die Sprite-Animation aktualisiert
-                self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation, mit der Angabe, dass der Charakter ausgewählt ist (für die Idle-Animation)
-            
             self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
             self.clock.tick(60) # Aktualisiert die Uhr und legt so die Framerate fest
  
@@ -123,7 +120,7 @@ class Cat_Fight:
         if self.current_player in self.cat_heroes: # Wenn der aktuelle Kampfteilnehmer spielbar ist, wird die Action-Box gezeichnet
             self.action_box.draw_action_box(self.current_player)
         if self.item_box.active == True: # Wenn die Item-Box aktiv ist, wird sie gezeichnet
-            self.item_box.draw_item_box()
+            self.item_box.draw_item_box(self.current_inventory)
         if self.ability_box.active == True: # Wenn die Ability-Box aktiv ist, wird sie gezeichnet
             self.ability_box.draw_ability_box()
         # Liest die Tooltip-Nachricht aus (wenn vorhanden) und zeichnet die Tooltip-Box(wenn aktiv):
@@ -153,6 +150,8 @@ class Cat_Fight:
  
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
+        if isinstance(self.current_player, Cleric): # Wenn der aktuelle Spieler der Cleric ist, wird die Sprite-Animation aktualisiert
+                self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation, mit der Angabe, dass der Charakter ausgewählt ist (für die Idle-Animation)
         self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
 
     def get_tooltip(self):
@@ -164,8 +163,6 @@ class Cat_Fight:
             self.tooltip_message = ""
         
 
-            
-    
     def _check_events(self):
         """Wartet auf Tasteneingaben vom Spieler"""
         for event in pygame.event.get():
@@ -197,6 +194,7 @@ class Cat_Fight:
                 self.current_target +=1
                 if self.current_target > len(self.target_group) -1:
                     self.current_target = 0
+                print(self.current_target)
         if event.key == pygame.K_UP and not self.current_action: # Bewegung des Cursors nach oben
             if self.action_box.active == True: # In der Action-Box
                 if self.action_box.current_position > 0:
@@ -210,27 +208,34 @@ class Cat_Fight:
                 self.current_target -= 1
                 if self.current_target < 0:
                     self.current_target = len(self.target_group) -1
+                print(self.current_target)
         if event.key == pygame.K_RETURN and not self.current_action:
                 if self.current_player in self.cat_heroes and self.action_box.active == True:
                     if self.action_box.current_position == 0: # Aktiviert den Cursor für die Stadtardattacke
                         self._create_or_delete_cursor(self.enemys)
                         self.action_box.active = False
-                    if self.action_box.current_position == 1:
+                    if self.action_box.current_position == 1: # Aktiviert die Item-Box
                         self.item_box.active = True
                         self.tooltip_box.active = True
                         self.action_box.active = False
-                    if self.action_box.current_position == 2:
+                    if self.action_box.current_position == 2: # Aktiviert die Ability-Box
                         self.ability_box.active = True
                         self.action_box.active = False
-                    # Wenn der Angriffscursor aktiviert ist und bisher noch keine aktuelle Aktion aktiv ist, wird als aktuelle Aktion
-                    # eine Standardattacke festgelegt und auf das aktuelle Ziel angewendet
-                elif self.item_box.active == True and not self.single_cursor.active:
-                    self._create_or_delete_cursor(self.cat_heroes)
-                elif self.single_cursor.active == True and self.current_action == None:
-                    if self.action_box.current_position == 0: 
-                        self.current_action = self.battle_sequencer.default_attack
-                        self._create_or_delete_cursor(self.target_group) # Der Attack-cursor wird wieder deaktiviert
+                elif self.item_box.active == True and not self.single_cursor.active: # Wenn die Item-Box aktiv ist, wird der Cursor aktiviert
+                    self._create_or_delete_cursor(self.cat_heroes) # Der Cursor hat als Ziel die Katzen
+                elif self.single_cursor.active == True and self.current_action == None: # Aktionen, wenn der Cursor aktiv ist
+                    if self.action_box.current_position == 0: # Wenn der Action-Box Cursor auf "Attack" steht...
+                        self.current_action = self.battle_sequencer.default_attack # ... wird die Standard-Attacke als aktuelle Aktion festgelegt
+                        # Der Attack-cursor wird wieder deaktiviert, dabei bleibt die aktuell ausgewählte Gruppe als target_group 
+                        # (wichtig für die aktuelle Aktion) aktiv:
+                        self._create_or_delete_cursor(self.target_group) 
                         self.battle_sequencer.action_sequence_active = True # Mit dieser Boolvariable beginnt die Einleitung der Kampfsequenz
+                    if self.action_box.current_position == 1: # Wenn der Action-Box Cursor auf "Items" steht...
+                        self.current_action = self.battle_sequencer.use #... wird "Use" als aktuelle Aktion festgelegt
+                        self._create_or_delete_cursor(self.target_group) 
+                        self.battle_sequencer.action_sequence_active = True 
+                        self.item_box.active = False
+                        self.tooltip_box.active = False
         if event.key == pygame.K_ESCAPE and not self.current_action: # Abbruch von Aktionen und Auswahlpunkten
             if self.single_cursor.active == True: # Bricht die aktuelle Cursor-Auswahl ab
                 self._create_or_delete_cursor(None)
@@ -246,6 +251,11 @@ class Cat_Fight:
             elif self.ability_box.active == True: # Bricht die aktuelle Ability-Auswahl ab
                 self.ability_box.active = False
                 self.action_box.active = True
+        if event.key == pygame.K_h: # Taste, um die Hilfe Box zu aktivieren oder deaktivieren
+            if self.help_box.active == True:
+                self.help_box.active = False
+            else:
+                self.help_box.active = True
             
 
     def _check_start_turn(self):
@@ -267,11 +277,12 @@ class Cat_Fight:
                 for player in self.fighting_order:
                     player.action = True
             self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
+            self.item_box.current_position = 0
             self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
             self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
             self.action_box.active = True
     
-    def _create_or_delete_cursor(self,group):
+    def _create_or_delete_cursor(self,group): # Als Parameter die Gruppe, deren Charakter anwählbar sein sollen
         """Erschafft oder Löscht den Angriffscursor"""
         self.target_group = group
         if self.single_cursor.active == True: # Falls bereits ein Angriffscursor aktiv ist, wird er durch diesen Befehl wieder deaktivert
@@ -297,10 +308,14 @@ class Cat_Fight:
         if self.current_action : # Diese Funktion wird erst ausgeführt, wenn eine aktuelle Aktion festgelegt ist
             # Solange die Variable für den action-sequencer wahr ist, wird die festgelegete Aktion ausgeführt
             if self.battle_sequencer.action_sequence_active == True: 
-                self.current_action(self.current_player, self.target_group[self.current_target]) 
+                if self.current_action == self.battle_sequencer.use:
+                    self.current_action == self.current_action(self.target_group[self.current_target], self.item_box.current_items[self.item_box.current_position])
+                else:
+                    self.current_action(self.current_player, self.target_group[self.current_target]) 
             # Wenn die Aktion beendet ist, wird Sequenz für das Anzeigen der Schadenswerte angezeigt
                 if self.battle_sequencer.action_sequence_active == False:
-                    self.battle_sequencer.damage_sequence_active = True
+                    if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
+                        self.battle_sequencer.damage_sequence_active = True
             # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
             # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
