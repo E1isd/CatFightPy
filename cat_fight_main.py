@@ -272,7 +272,6 @@ class Cat_Fight:
                         for method in self.battle_sequencer.all_abilities:
                             if method.__name__ == self.current_player.learned_abilities[self.ability_box.current_position]["method"]:
                                 self.current_action = method
-                                print(self.all_cursor.active)
                                 break
                         self.current_player.current_mp -= self.current_player.learned_abilities[self.ability_box.current_position]["mp_cost"]
                         self._create_or_delete_cursor(self.target_group) 
