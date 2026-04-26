@@ -32,7 +32,7 @@ class Warrior(Cat):
         self.attack = 200
         self.magic = 50
 
-        self.abilitys = {
+        self.abilities = { #typo :) 
             "attack":{"power": self.attack}
         }
 
@@ -42,7 +42,7 @@ class Cleric(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Item","Prayer"]
         
-        self.image = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png")
+        self.image = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png").convert_alpha() #convert() für bessere Performance + _alpha, da transparente Pixel
         self.image = pygame.transform.scale(self.image, (150, 150))
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
@@ -55,17 +55,17 @@ class Cleric(Cat):
         self.attack = 70
         self.magic = 150
 
-        self.abilitys = {
+        self.abilities = {
             "attack":{"power": self.attack}
         }
 
         #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
         self.sprites = []
-        sprite1 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png")
+        sprite1 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle1.png").convert_alpha()
         sprite1 = pygame.transform.scale(sprite1, (150, 150))
         self.sprites.append(sprite1)
         
-        sprite2 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle2.png")
+        sprite2 = pygame.image.load("images/Cat-Healer/Cat-HealerIdle2.png").convert_alpha()
         sprite2 = pygame.transform.scale(sprite2, (150, 150))
         self.sprites.append(sprite2)
         
@@ -84,7 +84,7 @@ class Cleric(Cat):
             if current_time - self.animation_timer >= self.animation_delay:
                 self.animation_timer = current_time
                 self.current_sprite += 1
-                if self.current_sprite >= len(self.sprites):
+                if self.current_sprite >= len(self.sprites): # Wenn das Ende der Sprite-Liste erreicht ist, wieder von vorne beginnen
                     self.current_sprite = 0
                 self.image = self.sprites[self.current_sprite]
         
@@ -103,7 +103,7 @@ class Mage(Cat):
         self.attack = 50
         self.magic = 300
 
-        self.abilitys = {
+        self.abilities = {
             "attack":{"power": self.attack}
         }
 

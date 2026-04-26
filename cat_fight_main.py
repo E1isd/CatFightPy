@@ -262,6 +262,14 @@ class Cat_Fight:
             if self.next_turn == True:
                 self.current_player = self.fighting_order[self.turn_timer]
                 self.next_turn = False
+                # Schließt die Item-Box und Ability-Box, falls sie noch geöffnet sein sollten
+                self.item_box.active = False
+                self.ability_box.active = False
+                self.tooltip_box.active = False
+                
+                # !!Temporär!! Print-Befehl wenn ein Gegner dran ist:
+                if self.current_player in self.enemys:
+                    print(f"{self.current_player.name} ist dran")
 
     def _check_next_turn(self):
         """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""
