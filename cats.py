@@ -1,4 +1,5 @@
 import pygame
+from ability import Ability
 from pygame.sprite import Sprite
 
 class Cat(Sprite):
@@ -13,8 +14,8 @@ class Cat(Sprite):
         self.is_alive = True # Bool-Variable, ob der Charakter noch am Leben ist
         self.got_damage = 0 # Variable für den Schaden, den ein Charakter erlitten hat
         self.got_heal = 0 # Variable für die Heilung, die ein Charakter erhalten hat
-
         self.status_effect = None # Bool-Variable, die überprüft, ob die Katze einen Statuseffekt hat
+        self.abilities = Ability()
 
 
 
@@ -24,17 +25,14 @@ class Warrior(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Items","Skills"]
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
-        self.current_hp = 200
+        self.current_hp = 300
         self.max_hp = 300
         self.current_mp = 25
         self.max_mp = 25
         self.defence = 150
         self.attack = 200
         self.magic = 50
-
-        self.abilities = { #typo :) 
-            "attack":{"power": self.attack}
-        }
+        self.learned_abilities=[self.abilities.berserker_claw]
 
 class Cleric(Cat):
     """Klasse für den Heiler"""
@@ -55,9 +53,7 @@ class Cleric(Cat):
         self.attack = 70
         self.magic = 150
 
-        self.abilities = {
-            "attack":{"power": self.attack}
-        }
+        self.learned_abilities=[self.abilities.prayer_of_lesser_healing,self.abilities.prayer_of_ressurection]
 
         #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
         self.sprites = []
@@ -95,17 +91,16 @@ class Mage(Cat):
         super().__init__(ct_game,start_x,start_y, name)
         self.actions = ["Attack","Item","Magic"]
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
-        self.current_hp = 0
+        self.current_hp = 150
         self.max_hp = 150
         self.current_mp = 250
         self.max_mp = 250
         self.defence = 70
         self.attack = 50
-        self.magic = 300
+        self.magic = 200
 
-        self.abilities = {
-            "attack":{"power": self.attack}
-        }
+
+        self.learned_abilities=[self.abilities.fireball, self.abilities.whirlwind]
 
 
 

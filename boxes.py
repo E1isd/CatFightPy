@@ -69,6 +69,7 @@ class Cat_Box(Box):
             self.font_freetype.render_to(self.screen,(mp_line.centerx - mp_line_spacing, self.rect.y +i),f"{str(cat.current_mp)}",color)
     
             i +=50
+            color = "black"
 
 class Enemy_Box(Box):
     """Klasse für die Oberfläche mit den Feindnamen"""
@@ -154,7 +155,7 @@ class Item_Box(Box):
             for postion in self.current_items: # Schreibt alle Items aus current_items mit Name und Anzahl in die Item-Box
                 pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{postion['name']}","Black")
                 self.postitions.append(pos) # Fügt das Rechteck des geschriebenen Items zur Positions-Liste hinzu (für dei Position des Cursors)
-                self.font_freetype.render_to(self.screen,(self.rect.x +300, self.rect.y +i),f"{postion['in_stock']}","Black")
+                self.font_freetype.render_to(self.screen,(self.rect.x +300, self.rect.y +i),f"x {postion['in_stock']}","Black")
                 i+=50
             # Setzt den Cursor der Item-Box an die aktuelle Stelle und zeichnet ihn
             self.cursor.rect.x = self.postitions[self.current_position].x - 50 
@@ -168,11 +169,32 @@ class Ability_Box(Box):
         super().__init__(cf_game)
         self.active = False
         self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,(self.screen_rect.left+10) + (box.rect.x -30),300)
+        self.postitions = []
+        self.current_position = 0
+
     
-    def draw_ability_box(self):
+    def draw_ability_box(self,cat):
         """Zeichnet die Item-Box"""
+        i = 100
+        self.postitions.clear()
+        color = "black"
         pygame.draw.rect(self.screen,"white",self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10)
+        pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10) 
+        mp_line = self.font_freetype.render_to(self.screen,(self.rect.right - 200, self.rect.y +50),f"MP Needed",color)    
+        
+
+        for ability in cat.learned_abilities:
+            if ability["mp_cost"] > cat.current_mp:
+                color = "grey"
+            pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{ability["name"]}",color)
+            self.postitions.append(pos)
+            text_spacing = self.font_freetype.get_rect(f"{ability["mp_cost"]} ").width
+            self.font_freetype.render_to(self.screen,(mp_line.centerx - (text_spacing/2), self.rect.y +i),f"{ability["mp_cost"]}",color)
+            i += 50
+            # Setzt den Cursor der Ability-Box an die aktuelle Stelle und zeichnet ihn
+        self.cursor.rect.x = self.postitions[self.current_position].x - 50 
+        self.cursor.rect.y = self.postitions[self.current_position].y
+        pygame.draw.rect(self.screen,"black",self.cursor)
 
 
 

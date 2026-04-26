@@ -25,6 +25,7 @@ class Necromancer(Enemy):
         self.defence = 50
         self.attack = 200
         self.magic = 300
+        self.magic_defence = 50
 
 class Poison_Minion(Enemy):
     """Klasse für Minion 1"""
@@ -37,6 +38,7 @@ class Poison_Minion(Enemy):
         self.defence = 40
         self.attack = 100
         self.magic = 300
+        self.magic_defence = 50
 
 class Rage_Minion(Enemy):
     """Klasse für Minion 2"""
@@ -49,4 +51,4 @@ class Rage_Minion(Enemy):
         self.defence = 40
         self.attack = 300
         self.magic = 100
-
+        self.magic_defence = 50
