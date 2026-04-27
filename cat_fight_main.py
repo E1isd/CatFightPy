@@ -70,7 +70,7 @@ class Cat_Fight:
         # Cursor:
         self.player_cursor = Cursor(self,self.current_player.rect.centerx - 10,self.current_player.rect.y -30) # Cursor über aktuellem Kampfteilnehmer
         self.single_cursor = Cursor (self, 0,0) # Auswahl  für das aktuelle Ziel
-        self.all_cursor = Cursor(self,0,0)# Auswahl für alle Ziele einer Gruppe
+        self.all_cursor = Cursor(self,0,0)# Auswahl für alle Ziele einer aktuell anvisierten Gruppe
 
 
         self.battle_sequencer = Action(self) # Klasse, die die gesamte Kampfabfolge (Angriffe, Schaden, Animationen) abhandelt
@@ -195,7 +195,7 @@ class Cat_Fight:
         if event.key == pygame.K_SPACE: # !TEMPORÄR um die Runden schnell zu skippen!!!
             if not self.current_action:
                 self.current_player.action = False
-                if self.single_cursor.active == True:
+                if self.single_cursor.active == True or self.all_cursor.active:
                     self._create_or_delete_cursor(None)
                 self.ability_box.active = False
                 self.item_box.active = False
@@ -207,10 +207,10 @@ class Cat_Fight:
             elif self.item_box.active == True and not self.single_cursor.active: # In der Item-Box
                 if self.item_box.current_position < len(self.item_box.postitions)-1:
                     self.item_box.current_position +=1
-            elif self.ability_box.active == True and not (self.single_cursor.active or self.all_cursor.active):
+            elif self.ability_box.active == True and not (self.single_cursor.active or self.all_cursor.active): # In der Ability-Box
                 if self.ability_box.current_position < len(self.ability_box.postitions)-1:
                     self.ability_box.current_position +=1
-            # Bewegung des Auswahlcursors nach unten (die Reihenfolge beginnt wieder von vorne, 
+            # Bewegung des Auswahlcursors für Einzelziele nach unten (die Reihenfolge beginnt wieder von vorne, 
             # wenn die Anzahl der möglichen Ziele überschritten wurde.):
             elif self.single_cursor.active == True:
                 self.current_target +=1
@@ -223,7 +223,7 @@ class Cat_Fight:
             elif self.item_box.active == True and not self.single_cursor.active: # In der Item-Box
                 if self.item_box.current_position > 0:
                     self.item_box.current_position -=1
-            elif self.ability_box.active == True and not (self.single_cursor.active or self.all_cursor.active):
+            elif self.ability_box.active == True and not (self.single_cursor.active or self.all_cursor.active): # In der Ability-Box
                 if self.ability_box.current_position >0:
                     self.ability_box.current_position -=1
             # Bewegung des Auswahlcursors nach oben (die Reihenfolge beginnt wieder von hinten, 
@@ -232,7 +232,7 @@ class Cat_Fight:
                 self.current_target -= 1
                 if self.current_target < 0:
                     self.current_target = len(self.target_group) -1
-        if event.key == pygame.K_RETURN and not self.current_action:
+        if event.key == pygame.K_RETURN and not self.current_action: # Die Taste mit der Aktionen ausgeführt werden 
                 if self.current_player in self.cat_heroes and self.action_box.active == True:
                     if self.action_box.current_position == 0: # Aktiviert den Cursor für die Stadtardattacke
                         self._create_or_delete_cursor(self.enemys)
@@ -246,9 +246,12 @@ class Cat_Fight:
                         self.tooltip_box.active = True
                         self.action_box.active = False
                 elif self.item_box.active == True and not self.single_cursor.active: # Wenn die Item-Box aktiv ist, wird der Cursor aktiviert
-                    self._create_or_delete_cursor(self.cat_heroes) # Der Cursor hat als Ziel die Katzen
+                    self._create_or_delete_cursor(self.cat_heroes) # Der Cursor hat als Ziel die Katzen (gibt momentan nur Heilitems)
                 elif self.ability_box.active == True and not self.single_cursor.active and not self.all_cursor.active:
+                    # Die aktuell ausgewählte Fähigkeit kann nur ausgewählt werden, wenn die Katze die erforderlichen MP hat:
                     if self.current_player.current_mp >= self.current_player.learned_abilities[self.ability_box.current_position]["mp_cost"]:
+                        # Aus dem Dictonary wird gelesen, ob die Fähigkeit Gegner angreift oder Katzen heilt. Entsprechend werden die Cursor
+                        # gezeichnet:
                         if self.current_player.learned_abilities[self.ability_box.current_position]["target"] == "enemy":
                             self._create_or_delete_cursor(self.enemys)
                         elif self.current_player.learned_abilities[self.ability_box.current_position]["target"] == "cat":
@@ -268,11 +271,15 @@ class Cat_Fight:
                         self.battle_sequencer.action_sequence_active = True 
                         self.item_box.active = False
                         self.tooltip_box.active = False
-                    if self.action_box.current_position == 2:
+                    if self.action_box.current_position == 2: # Wenn der Action-Box Cursor auf Magic, Prayer oder Skills steht...
+                        # ... werden die Namen aller verfügbaren Methoden mit dem entsprechenden Eintrag der aktuell ausgewählten Ability 
+                        # verglichen. Sobald es ein "Match" gibt, wird diese Methode als aktuelle Aktion festgelegt und die For-Schleife
+                        # bricht ab (break).
                         for method in self.battle_sequencer.all_abilities:
                             if method.__name__ == self.current_player.learned_abilities[self.ability_box.current_position]["method"]:
                                 self.current_action = method
                                 break
+                        # Die Magiekosten der Ability werden von den aktuellen Manapunkten der Katze abgezogen
                         self.current_player.current_mp -= self.current_player.learned_abilities[self.ability_box.current_position]["mp_cost"]
                         self._create_or_delete_cursor(self.target_group) 
                         self.battle_sequencer.action_sequence_active = True 
@@ -331,20 +338,22 @@ class Cat_Fight:
                 for player in self.fighting_order:
                     player.action = True
             self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
-            self.item_box.current_position = 0
-            self.ability_box.current_position = 0
+            self.item_box.current_position = 0 # Zurücksetzen der Cursor-Postition für Item-Box Auswahl
+            self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl
             self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
             self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
             self.action_box.active = True
     
-    def _create_or_delete_cursor(self,group): # Als Parameter die Gruppe, deren Charakter anwählbar sein sollen
+    def _create_or_delete_cursor(self,group): # Als Parameter die Gruppe, deren Charakter(e) anwählbar sein sollen
         """Erschafft oder Löscht den Angriffscursor"""
         self.target_group = group
+        # Aufgrund des Dictonary-Eintrags der aktuell ausgewählten Fähigkeit wird ermittelt, ob Cursor für ein Einzelziel oder
+        # für alle Ziele der entsprechenden Gruppe gezeichnet werden sollen:
         if self.ability_box.active == True and self.current_player.learned_abilities[self.ability_box.current_position]["t_number"] == "all":
             cursor = self.all_cursor
         else:
             cursor = self.single_cursor
-        if cursor.active == True: # Falls bereits ein Angriffscursor aktiv ist, wird er durch diesen Befehl wieder deaktivert
+        if cursor.active == True: # Falls bereits ein Auswahlcursor aktiv ist, wird er durch diesen Befehl wieder deaktivert
             cursor.active = False
         else:
             cursor.active = True
@@ -371,6 +380,8 @@ class Cat_Fight:
             if self.battle_sequencer.action_sequence_active == True: 
                 if self.current_action == self.battle_sequencer.use:
                     self.current_action == self.current_action(self.target_group[self.current_target], self.item_box.current_items[self.item_box.current_position])
+            # Aufgrund des Dictonary-Eintrags der aktuell ausgewählten Fähigkeit wird ermittelt, die Parameter in der aktuellen Ability-Methode
+            # für Einzelziele oder eine ganze Gruppe zu verwenden:
                 elif self.action_box.current_position == 2 and self.current_player.learned_abilities[self.ability_box.current_position]["t_number"] == "all":
                     self.current_action(self.current_player, self.target_group)
                 else:
@@ -380,7 +391,7 @@ class Cat_Fight:
                     if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
                         self.battle_sequencer.damage_sequence_active = True
             # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
-            # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde
+            # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
                 self.current_action = None
                 self.current_player.action = False

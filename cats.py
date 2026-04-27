@@ -32,7 +32,7 @@ class Warrior(Cat):
         self.defence = 150
         self.attack = 200
         self.magic = 50
-        self.learned_abilities=[self.abilities.berserker_claw]
+        self.learned_abilities=[self.abilities.berserker_claw] # Die bisher gelernten Fähigkeiten der Klasse
 
 class Cleric(Cat):
     """Klasse für den Heiler"""
@@ -99,20 +99,8 @@ class Mage(Cat):
         self.attack = 50
         self.magic = 200
 
-
         self.learned_abilities=[self.abilities.fireball, self.abilities.whirlwind]
 
 
 
 
-# Inaktiver Code
-
-    def standard_attack(self, target): 
-        """Funktion für den einfachen Angriff des Spielers"""
-        target.got_damage = self.attack - target.defence # Ermittelt den Schaden
-        if target.got_damage < 0: 
-            target.got_damage = 0
-        target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
-        self.action = False # Nach dem Angriff hat der Spieler keine Aktionen mehr
-        print(f"{self.name} hit {target.name}. Damage: {target.got_damage}.  HP: {target.current_hp} / {target.max_hp} ")
-        target.got_damage = 0

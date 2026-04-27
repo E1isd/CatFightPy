@@ -182,9 +182,9 @@ class Ability_Box(Box):
         pygame.draw.rect(self.screen,"black",self.rect, width=3, border_radius=10) 
         mp_line = self.font_freetype.render_to(self.screen,(self.rect.right - 200, self.rect.y +50),f"MP Needed",color)    
         
-
-        for ability in cat.learned_abilities:
-            if ability["mp_cost"] > cat.current_mp:
+        for ability in cat.learned_abilities: # Zeichnet alle aktuell gelernten Abilitys der Katze mitsamt den Manakosten
+            # Wenn die Manakosten der Fähigkeit größer sind, als die aktuellen Manakosten der Katze, werden die MP grau dargestellt
+            if ability["mp_cost"] > cat.current_mp: 
                 color = "grey"
             pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{ability["name"]}",color)
             self.postitions.append(pos)
