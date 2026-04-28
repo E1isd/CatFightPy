@@ -9,7 +9,7 @@ class Ability:
     # anvisiert oder die ganze Gruppe & der Name der Methode, der die Animation und die Berechnung der Schadenswerte oder Heilungswerte der 
     # Ability ausführt.
 
-
+    ######## Fähigkeiten der Katzen ########
     # Kriegerfähigkeiten
         self.berserker_claw = {"name":"Berserker Claw","mp_cost":10,"tooltip":"Unleashes fury of claws upon one enemy","target":"enemy","t_number":"single","method":"berserker_claw"}
 
@@ -21,3 +21,8 @@ class Ability:
         self.fireball = {"name":"Fireball","mp_cost":10,"tooltip":"A small fireball for lesser fire damage upon one enemy","target":"enemy","t_number":"single","method":"fireball"}
         self.whirlwind = {"name":"Whirlwind","mp_cost":20,"tooltip":"A whirlwind bringing damage upon all enemies","target":"enemy","t_number":"all","method":"whirlwind"}
     
+
+    ####### Fähigkeiten der Gegner #####
+
+    # Standardangriff
+        self.simple_attack = {"target":"cat","t_number":"single","method":"default_attack"}

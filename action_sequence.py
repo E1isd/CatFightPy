@@ -15,9 +15,11 @@ class Action():
         self.x_pos = 0 # Variable für die x-Bewegung bei Animationen
         self.y_pos = 0 # Variable für die y-Bewegung bei Animationen
         self.frame = 0 # Variable für die Frames (Wichtig, um Zeit vergehen zu lassen bei Animationen)
-        
+
         # Liste mit den Methoden für alle Abilitys im Spiel:
         self.all_abilities = [self.berserker_claw, self.prayer_of_lesser_healing , self.prayer_of_ressurection, self.fireball, self.whirlwind]
+
+        self.enemy_abilities = [self.default_attack]
 
     #### Allgemeine Funktionen ####
 

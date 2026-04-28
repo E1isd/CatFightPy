@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
+from ability import Ability
 
 class Enemy(Sprite):
     """Überklasse für die Gegner"""
@@ -12,6 +13,7 @@ class Enemy(Sprite):
         self.action = 1
         self.got_damage = 0
         self.is_alive = True
+        self.abilities = Ability()
 
 
 class Necromancer(Enemy):
@@ -27,6 +29,8 @@ class Necromancer(Enemy):
         self.magic = 300
         self.magic_defence = 50
 
+        self.available_skills = [self.abilities.simple_attack]
+
 class Poison_Minion(Enemy):
     """Klasse für Minion 1"""
     def __init__(self,ct_game,start_x,start_y,name):
@@ -39,6 +43,7 @@ class Poison_Minion(Enemy):
         self.attack = 100
         self.magic = 300
         self.magic_defence = 50
+        self.available_skills = [self.abilities.simple_attack]
 
 class Rage_Minion(Enemy):
     """Klasse für Minion 2"""
@@ -52,3 +57,4 @@ class Rage_Minion(Enemy):
         self.attack = 300
         self.magic = 100
         self.magic_defence = 50
+        self.available_skills = [self.abilities.simple_attack]
