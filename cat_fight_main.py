@@ -67,8 +67,8 @@ class Cat_Fight:
         
         
         self.current_target = 0 # Die int-Variable für die Auswahl des aktuellen Ziels
-        self.enemy_target = None
-        self.enemy_action = None 
+        self.enemy_target = None # Variable für das aktuelle Gegner-Ziel
+        self.enemy_action = None # Variable für die aktuelle Gegner-Aktion
 
         # Cursor:
         self.player_cursor = Cursor(self,self.current_player.rect.centerx - 10,self.current_player.rect.y -30) # Cursor über aktuellem Kampfteilnehmer
@@ -81,8 +81,6 @@ class Cat_Fight:
         
 
         self.current_effects = pygame.sprite.Group() # !!! Aktuell noch inaktiv !!!
-
-
 
 
     def run_game(self): # Hauptfunktion (Ereignisse checken, Bildschirm/Sprites aktualisieren)
@@ -175,12 +173,11 @@ class Cat_Fight:
 
     def get_tooltip(self):
         """Funktion, um die Nachricht für die Tooltip-Box auszulesen"""
-        # Die Tooltip-Message wird aus dem Inventory-Dictonary gelesen
-        if self.item_box.active == True:
+        if self.item_box.active == True:  # Die Tooltip-Message wird aus dem Inventory-Dictonary gelesen
             self.tooltip_message = self.item_box.current_items[self.item_box.current_position]["tooltip"]
-        elif self.ability_box.active == True:
+        elif self.ability_box.active == True: # Die Tooltip-Message wird aus dem Ability-Dictonary gelesen
             self.tooltip_message = self.current_player.learned_abilities[self.ability_box.current_position]["tooltip"]
-        else: # Wenn kein Item angewählt ist, bleibt die Message leer
+        else: # Wenn kein Element mit Tooltip angewählt ist, bleibt die Message leer
             self.tooltip_message = ""
         
 
@@ -324,14 +321,17 @@ class Cat_Fight:
                 self.ability_box.active = False
                 self.tooltip_box.active = False
                 while self.next_turn == True: 
-                    self.current_player = self.fighting_order[self.turn_timer]
+                    self.current_player = self.fighting_order[self.turn_timer] # Der nächste Spieler wird anhand der Kampfreihenfolge festgelegt
+                    # Wenn der Spieler zur Gegnergruppe gehört, wird die while-Schleife beendet und die Methode für die Gegnerrunde ausgeführt:
                     if self.current_player in self.enemies: 
                         self.next_turn = False
                         print(f"{self.current_player.name} ist dran") # !!Temporär!! Print-Befehl wenn ein Gegner dran ist
-                        self.enemy_turn()
+                        self.enemy_turn() 
+                    # Falls der aktuelle Spieler eine tote Katze ist, wird der Rundentimer eins erhöht (d.h. die Runde wird übersprungen)
+                    # und die while-Schleife beginnt von vorne. So wird sichergestellt, dass tote Spieler übersprungen werden:
                     elif self.current_player in self.cat_heroes and self.current_player.is_alive == False:
                         self.turn_timer +=1
-                    else:
+                    else: # Bei einer lebendingen Katze als aktuellen Spieler wird die Schleife aufgelöst
                         self.next_turn = False
                     
 
@@ -370,18 +370,18 @@ class Cat_Fight:
 
     def enemy_turn(self):
         """Führt den Gegnerzug aus"""
-        self.enemy_action = choice(self.current_player.available_skills)
+        # Als aktuelle Fähigkeit wird eine Fähigkeit aus der Liste der möglichen Angriffe gewählt:
+        self.enemy_action = choice(self.current_player.available_skills) 
+        # Anhand des Dictonary-Eintrags wird die passende Methode zu der Fähigkeit ermittelt und als aktuelle Aktion festgelegt:
         for method in self.battle_sequencer.enemy_abilities:
             if method.__name__ == self.enemy_action["method"]:
                 self.current_action = method
                 break 
-        if self.enemy_action["target"] == "cat":
+        if self.enemy_action["target"] == "cat": # Wenn das Ziel der Aktion die Katzen sind
             for cat in self.cat_heroes:
-                if cat.is_alive == True:
+                if cat.is_alive == True: # Als mögliche Ziele kommen nur lebendige Katzen in Frage
                     self.target_group.append(cat)
-            if self.enemy_action["t_number"] == "all":
-                self.target_group = self.target_group
-            elif self.enemy_action["t_number"] == "single":
+            if self.enemy_action["t_number"] == "single": # Bei Aktionen gegen ein Einzelziel wird das Ziel zufällig aus der Gruppe ermittelt
                 self.enemy_target = choice(self.target_group)
         elif self.enemy_action["target"] == "enemy":
             if self.enemy_action["t_number"] == "all":
