@@ -319,16 +319,21 @@ class Cat_Fight:
             """Überprüft, ob die Bedingung für den Start der Runde gegeben ist"""
             # Falls ja, wird ein neuer aktiver Spieler ausgewählt
             if self.next_turn == True:
-                self.current_player = self.fighting_order[self.turn_timer]
-                self.next_turn = False
                 # Schließt die Item-Box und Ability-Box, falls sie noch geöffnet sein sollten
                 self.item_box.active = False
                 self.ability_box.active = False
                 self.tooltip_box.active = False
-                # !!Temporär!! Print-Befehl wenn ein Gegner dran ist:
-                if self.current_player in self.enemies:
-                    print(f"{self.current_player.name} ist dran")
-                    self.enemy_turn()
+                while self.next_turn == True: 
+                    self.current_player = self.fighting_order[self.turn_timer]
+                    if self.current_player in self.enemies: 
+                        self.next_turn = False
+                        print(f"{self.current_player.name} ist dran") # !!Temporär!! Print-Befehl wenn ein Gegner dran ist
+                        self.enemy_turn()
+                    elif self.current_player in self.cat_heroes and self.current_player.is_alive == False:
+                        self.turn_timer +=1
+                    else:
+                        self.next_turn = False
+                    
 
     def _check_next_turn(self):
         """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""
@@ -345,6 +350,7 @@ class Cat_Fight:
             self.item_box.current_position = 0 # Zurücksetzen der Cursor-Postition für Item-Box Auswahl
             self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl
             self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
+            self.target_group = []
             self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
             self.action_box.active = True
     
@@ -370,10 +376,13 @@ class Cat_Fight:
                 self.current_action = method
                 break 
         if self.enemy_action["target"] == "cat":
+            for cat in self.cat_heroes:
+                if cat.is_alive == True:
+                    self.target_group.append(cat)
             if self.enemy_action["t_number"] == "all":
-                self.target_group = self.cat_heroes
+                self.target_group = self.target_group
             elif self.enemy_action["t_number"] == "single":
-                self.enemy_target = choice(self.cat_heroes)
+                self.enemy_target = choice(self.target_group)
         elif self.enemy_action["target"] == "enemy":
             if self.enemy_action["t_number"] == "all":
                 self.target_group = self.enemies
@@ -418,7 +427,9 @@ class Cat_Fight:
                     self.current_action(self.current_player, self.target_group)
                 elif self.enemy_action["t_number"] == "single":
                     self.current_action(self.current_player, self.enemy_target)
-                self.battle_sequencer.damage_sequence_active = True
+                if self.battle_sequencer.action_sequence_active == False:
+                    if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
+                        self.battle_sequencer.damage_sequence_active = True
             # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
             # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:

@@ -25,8 +25,8 @@ class Warrior(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Items","Skills"]
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
-        self.current_hp = 300
-        self.max_hp = 300
+        self.current_hp = 800
+        self.max_hp = 800
         self.current_mp = 25
         self.max_mp = 25
         self.defence = 150
@@ -45,8 +45,8 @@ class Cleric(Cat):
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
         self.rect.y = self.y_position
-        self.current_hp = 150
-        self.max_hp = 150
+        self.current_hp = 500
+        self.max_hp = 500
         self.current_mp = 150
         self.max_mp = 150
         self.defence = 70
@@ -91,8 +91,8 @@ class Mage(Cat):
         super().__init__(ct_game,start_x,start_y, name)
         self.actions = ["Attack","Item","Magic"]
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
-        self.current_hp = 150
-        self.max_hp = 150
+        self.current_hp = 500
+        self.max_hp = 500
         self.current_mp = 250
         self.max_mp = 250
         self.defence = 70

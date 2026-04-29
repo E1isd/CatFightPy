@@ -10,7 +10,7 @@ class Enemy(Sprite):
         self.x_position = start_x
         self.y_position = start_y
         self.name = name
-        self.action = 1
+        self.action = True
         self.got_damage = 0
         self.is_alive = True
         self.abilities = Ability()
