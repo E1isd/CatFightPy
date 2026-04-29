@@ -32,7 +32,7 @@ class Action():
             if target.got_damage < 0: # Wenn der Schaden kleiner als 0 ist, wird er auf 0 zurückgesetzt
                 target.got_damage = 0
             target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
-            if target.current_hp < 0:
+            if target.current_hp < 0: # Sind aktuelle HP kleiner als 0, werden sie auf 0 gesetzt (damit keine negativen Zahlen angezeigt werden)
                 target.current_hp = 0
             self.damage_group.add(target) # Das Ziel, welches Schaden genommen hat, wird zur Schadensgruppe zugefügt
         if group == self.healed_group:
