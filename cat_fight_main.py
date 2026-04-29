@@ -34,7 +34,7 @@ class Cat_Fight:
         self.casting_cat = Mage(self,1200,600, "Mage")
 
         # Gegner:
-        self.boss = Necromancer(self,350,400,"The Evil Necromancer Cat")
+        self.boss = Necromancer(self,350,350,"The Evil Necromancer Cat")
         self.minion_1 = Poison_Minion(self,650,300, "Cat-Minion 1")
         self.minion_2 = Rage_Minion (self,650,600, "Cat-Minion 2")
 
@@ -116,7 +116,7 @@ class Cat_Fight:
         if self.minion_2.is_alive == True:
             pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
-            pygame.draw.rect(self.screen,"brown",self.boss.rect)
+            self.screen.blit(self.boss.image, (self.boss.x_position,self.boss.y_position))
 
 
     def _draw_game_fields(self):
@@ -169,8 +169,9 @@ class Cat_Fight:
  
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
-        if isinstance(self.current_player, Cleric): # Wenn der aktuelle Spieler der Cleric ist, wird die Sprite-Animation aktualisiert
-                self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation, mit der Angabe, dass der Charakter ausgewählt ist (für die Idle-Animation)
+        # Sprite-Animation für alle Charaktere (Helden und Gegner), die gerade an der Reihe sind
+        if self.current_player:
+            self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation
         self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
 
     def get_tooltip(self):
@@ -388,6 +389,9 @@ class Cat_Fight:
                 self.target_group = self.enemies
             elif self.enemy_action["t_number"] == "single":
                 self.enemy_target = choice(self.enemies)
+        # Timer starten für 3 Sekunden Wartezeit vor dem Angriff
+        self.battle_sequencer.enemy_attack_timer = pygame.time.get_ticks()
+        self.battle_sequencer.enemy_attack_ready = False
         self.battle_sequencer.action_sequence_active = True
 
 
@@ -423,13 +427,20 @@ class Cat_Fight:
                     if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
                         self.battle_sequencer.damage_sequence_active = True
             elif self.battle_sequencer.action_sequence_active == True and self.current_player in self.enemies:
-                if self.enemy_action["t_number"] == "all":
-                    self.current_action(self.current_player, self.target_group)
-                elif self.enemy_action["t_number"] == "single":
-                    self.current_action(self.current_player, self.enemy_target)
-                if self.battle_sequencer.action_sequence_active == False:
-                    if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
-                        self.battle_sequencer.damage_sequence_active = True
+                # Prüfen ob 3 Sekunden vergangen sind seit dem Start des Gegnerzugs
+                if self.battle_sequencer.enemy_attack_ready == False:
+                    current_time = pygame.time.get_ticks()
+                    if current_time - self.battle_sequencer.enemy_attack_timer >= self.battle_sequencer.enemy_attack_delay:
+                        self.battle_sequencer.enemy_attack_ready = True
+                # Wenn die Wartezeit vorbei ist, wird der Angriff ausgeführt
+                if self.battle_sequencer.enemy_attack_ready:
+                    if self.enemy_action["t_number"] == "all":
+                        self.current_action(self.current_player, self.target_group)
+                    elif self.enemy_action["t_number"] == "single":
+                        self.current_action(self.current_player, self.enemy_target)
+                    if self.battle_sequencer.action_sequence_active == False:
+                        if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
+                            self.battle_sequencer.damage_sequence_active = True
             # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
             # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:

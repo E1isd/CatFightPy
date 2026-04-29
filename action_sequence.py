@@ -7,6 +7,9 @@ class Action():
         self.screen = cf_game.screen
         self.screen_rect = self.screen.get_rect()
         self.action_sequence_active = False # Bool Variable für die aktuelle Aktions-Sequenz
+        self.enemy_attack_delay = 1500 # 1.5 Sekunden Wartezeit für Gegner-Angriffe
+        self.enemy_attack_timer = 0 # Timer für Gegner-Angriffe
+        self.enemy_attack_ready = False # Flag, ob der Gegner-Angriff bereit ist
         self.damage_sequence_active = False # Bool Variable für die aktuelle Schadens-Sequenz
         self.font_freetype = pygame.freetype.SysFont(None,30) # Variable für die Schrift
         self.damage_group = pygame.sprite.Group() # Gruppe für alle Kampfteilnehmer, die Schaden erlitten haben
@@ -83,6 +86,7 @@ class Action():
         """Funktion für den Standardangriff - !Noch fehlt die Animation!"""
         target.got_damage = attacker.attack - target.defence # Ermittelt den Schaden
         self.calculate_damage_or_heal(target,self.damage_group)
+        self.enemy_attack_ready = False # Reset des Flags nach dem Angriff
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
  
     def use(self, target, item):

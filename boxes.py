@@ -186,10 +186,10 @@ class Ability_Box(Box):
             # Wenn die Manakosten der Fähigkeit größer sind, als die aktuellen Manakosten der Katze, werden die MP grau dargestellt
             if ability["mp_cost"] > cat.current_mp: 
                 color = "grey"
-            pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{ability["name"]}",color)
+            pos=self.font_freetype.render_to(self.screen,(self.rect.x +100, self.rect.y +i),f"{ability['name']}",color)
             self.postitions.append(pos)
-            text_spacing = self.font_freetype.get_rect(f"{ability["mp_cost"]} ").width
-            self.font_freetype.render_to(self.screen,(mp_line.centerx - (text_spacing/2), self.rect.y +i),f"{ability["mp_cost"]}",color)
+            text_spacing = self.font_freetype.get_rect(f"{ability['mp_cost']} ").width
+            self.font_freetype.render_to(self.screen,(mp_line.centerx - (text_spacing/2), self.rect.y +i),f"{ability['mp_cost']}",color)
             i += 50
             # Setzt den Cursor der Ability-Box an die aktuelle Stelle und zeichnet ihn
         self.cursor.rect.x = self.postitions[self.current_position].x - 50 
