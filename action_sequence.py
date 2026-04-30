@@ -94,6 +94,11 @@ class Action():
             self.calculate_damage_or_heal(player,self.damage_group)
             self.font_color = "purple"
             self.message = f"{player.name} is poisoned."
+        if player.status_effect == "burn":
+            player.got_damage = 30
+            self.calculate_damage_or_heal(player,self.damage_group)
+            self.font_color = "red"
+            self.message = f"{player.name} is burning."
 
             
 
@@ -162,6 +167,8 @@ class Action():
         target.got_damage = 50 + attacker.magic - target.magic_defence # Ermittelt den Schaden
         self.calculate_damage_or_heal(target,self.damage_group)
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
+        if target.status_effect != "burn":
+            target.status_effect = "burn"
     
     def whirlwind(self, attacker, target_group):
         """Methode für einen Wirbelwind-Zauber gegen alle Gegner"""

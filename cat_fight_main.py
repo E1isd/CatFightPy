@@ -467,7 +467,7 @@ class Cat_Fight:
                     if current_time - self.battle_sequencer.enemy_attack_timer >= self.battle_sequencer.enemy_attack_delay:
                         self.battle_sequencer.enemy_attack_ready = True
                 # Wenn die Wartezeit vorbei ist, wird der Angriff ausgeführt
-                if self.battle_sequencer.enemy_attack_ready:
+                if self.battle_sequencer.enemy_attack_ready and not self.show_status:
                     if self.enemy_action["t_number"] == "all":
                         self.current_action(self.current_player, self.target_group)
                     elif self.enemy_action["t_number"] == "single":
