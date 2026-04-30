@@ -12,6 +12,7 @@ class Action():
         self.enemy_attack_ready = False # Flag, ob der Gegner-Angriff bereit ist
         self.damage_sequence_active = False # Bool Variable für die aktuelle Schadens-Sequenz
         self.font_freetype = pygame.freetype.SysFont(None,30) # Variable für die Schrift
+        self.font_color = None
         self.damage_group = pygame.sprite.Group() # Gruppe für alle Kampfteilnehmer, die Schaden erlitten haben
         self.healed_group = pygame.sprite.Group() # Gruppe für alle Kampfteilnehmer, die geheilt wurden
         self.animation_group = pygame.sprite.Group() # !!! Aktuell noch inaktiv !!!
@@ -19,10 +20,14 @@ class Action():
         self.y_pos = 0 # Variable für die y-Bewegung bei Animationen
         self.frame = 0 # Variable für die Frames (Wichtig, um Zeit vergehen zu lassen bei Animationen)
 
+        self.message = ""
+
+
+
         # Liste mit den Methoden für alle Abilitys im Spiel:
         self.all_abilities = [self.berserker_claw, self.prayer_of_lesser_healing , self.prayer_of_ressurection, self.fireball, self.whirlwind]
 
-        self.enemy_abilities = [self.default_attack]
+        self.enemy_abilities = [self.default_attack,self.poison_claw]
 
     #### Allgemeine Funktionen ####
 
@@ -43,7 +48,7 @@ class Action():
                 self.healed_group.add(target)  # Das Ziel, welches geheilt wurde, wird zur Heilungsgruppe hinzugefügt
 
 
-    def draw_damage_numbers(self):
+    def draw_damage_numbers(self, font_color = None):
         """Funktion, die den Schaden oder Heilung als Zahlen auf alle betroffenen Ziele zeichnet"""
         if self.damage_sequence_active == True: 
                 for player in self.damage_group:
@@ -52,7 +57,7 @@ class Action():
                     string_height = self.font_freetype.get_rect(f"{player.got_damage} ").height 
                     # Zeichnet den aktuellen Schadenwert möglichst zentral auf das Ziel
                     self.font_freetype.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2)),\
-                                                 f"{player.got_damage}", size=30+self.x_pos) 
+                                                 f"{player.got_damage}",font_color, size=30+self.x_pos) 
                 for player in self.healed_group:
                     # Ermittelt Höhe und Länge des Schriftzuges, um es möglichst zentral zu zeichnen
                     string_lenght = self.font_freetype.get_rect(f"{player.got_heal} ").width
@@ -77,8 +82,22 @@ class Action():
                     self.x_pos = 0
                     for player in self.damage_group:
                         player.got_damage = 0
+                    for player in self.healed_group:
+                        player.got_heal = 0
                     self.damage_group.empty()
                     self.healed_group.empty()
+        
+    def status_effects(self, player):
+        """Methode für die Abhandlung aller Statuseffekte"""
+        if player.status_effect == "poison":
+            player.got_damage = 15
+            self.calculate_damage_or_heal(player,self.damage_group)
+            self.font_color = "purple"
+            self.message = f"{player.name} is poisoned."
+
+            
+
+
 
         
     ##### Standard Aktionen #####
@@ -150,6 +169,18 @@ class Action():
             target.got_damage = 20 + attacker.magic - target.magic_defence
             self.calculate_damage_or_heal(target,self.damage_group)
         self.action_sequence_active = False
+
+
+
+    ### Gegner-Aktionen ###
+    def poison_claw(self,attacker,target):
+        """Methode für Vergiftungskrale"""
+        target.got_damage = target.got_damage = attacker.attack -20 - target.defence
+        self.calculate_damage_or_heal(target,self.damage_group)
+        if target.status_effect != "poison":
+            target.status_effect = "poison"
+        self.action_sequence_active = False
+        
     
     
 

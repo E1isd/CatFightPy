@@ -43,7 +43,12 @@ class Cat_Box(Box):
             mp_line_spacing = self.font_freetype.get_rect(f"{cat.current_mp} ").width
 
             # Schreibt Namen der Katze und falls es die aktuell aktive Katze ist, wird auch der Cursor an dem entsprechenden Namen gezeichnet
-            name_box = self.font_freetype.render_to(self.screen,(self.rect.x +550, self.rect.y + i),f"{str(cat.name)}",color)
+            if cat.status_effect == "poison":
+                color = "purple"
+                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +550, self.rect.y + i),f"{str(cat.name)}",color)
+                color = "black"
+            else: 
+                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +550, self.rect.y + i),f"{str(cat.name)}",color)
 
             if cat == current_cat:
                 self.cursor.rect.x = name_box.x -50

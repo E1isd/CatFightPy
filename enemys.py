@@ -14,6 +14,7 @@ class Enemy(Sprite):
         self.got_damage = 0
         self.is_alive = True
         self.abilities = Ability()
+        self.status_effect = None
 
 
 class Necromancer(Enemy):
@@ -134,7 +135,7 @@ class Poison_Minion(Enemy):
         self.attack = 100
         self.magic = 300
         self.magic_defence = 50
-        self.available_skills = [self.abilities.simple_attack]
+        self.available_skills = [self.abilities.simple_attack,self.abilities.poison_claw]
 
 class Rage_Minion(Enemy):
     """Klasse für Minion 2"""

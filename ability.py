@@ -26,3 +26,4 @@ class Ability:
 
     # Standardangriff
         self.simple_attack = {"target":"cat","t_number":"single","method":"default_attack"}
+        self.poison_claw = {"target":"cat","t_number":"single","method":"poison_claw"}
