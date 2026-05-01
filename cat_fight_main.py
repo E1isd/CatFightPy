@@ -119,6 +119,7 @@ class Cat_Fight:
             pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
             self.screen.blit(self.boss.image, (self.boss.x_position,self.boss.y_position))
+
         
 
 
@@ -150,23 +151,23 @@ class Cat_Fight:
             if self.target_group == self.enemies: # Koordinaten, wenn das Ziel zu den Gegnern gehört
                 self.single_cursor.rect.x = self.enemies[self.current_target].rect.right +10
                 self.single_cursor.rect.y = self.enemies[self.current_target].rect.centery -16
-                self.screen.blit(self.single_cursor.attack_cursor_image, (self.single_cursor.rect.x,self.single_cursor.rect.y))
+                self.single_cursor.draw_animated_cursor(self.single_cursor.attack_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y)
             elif self.target_group == self.cat_heroes: # Koordinaten, wenn das Ziel zu den Katzen gehört
                 self.single_cursor.rect.x = self.cat_heroes[self.current_target].rect.left -40
                 self.single_cursor.rect.y = self.cat_heroes[self.current_target].rect.centery -16
-                self.screen.blit(self.single_cursor.heal_cursor_image, (self.single_cursor.rect.x,self.single_cursor.rect.y))
+                self.single_cursor.draw_animated_cursor(self.single_cursor.heal_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y)
         # Der Cursor für das Auswählen aller Ziele einer Gruppe
         if self.all_cursor.active == True:
             if self.target_group == self.enemies:
                 for enemy in self.enemies:
                     self.all_cursor.rect.x = enemy.rect.right +10
                     self.all_cursor.rect.y = enemy.rect.centery -10
-                    pygame.draw.rect(self.screen,"red",self.all_cursor)
+                    self.all_cursor.draw_animated_cursor(self.all_cursor.attack_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
             elif self.target_group == self.cat_heroes:
                 for cat in self.cat_heroes:
                     self.all_cursor.rect.x = cat.rect.right +10
                     self.all_cursor.rect.y = cat.rect.centery -10
-                    pygame.draw.rect(self.screen,"green",self.all_cursor)
+                    self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
 
 
  
