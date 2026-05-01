@@ -131,8 +131,12 @@ class Action_Box(Box):
 
         # Zeichnet den Cursor an die erste Position der Aktionsbox
         self.cursor.rect.x = self.postitions[self.current_position].x - 50
-        self.cursor.rect.y = self.postitions[self.current_position].y
-        pygame.draw.rect(self.screen,"black",self.cursor)
+        self.cursor.rect.y = self.postitions[self.current_position].y - 6
+        if self.active == True:
+            self.screen.blit(self.cursor.box_cursor_image, (self.cursor.rect.x,self.cursor.rect.y))
+        else:
+            self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
+        
     
 class Item_Box(Box):
     """Klasse für die Menüoberfläche der Items"""
@@ -144,7 +148,7 @@ class Item_Box(Box):
         self.postitions = []
         self.current_position = 0
     
-    def draw_item_box(self, inventory):
+    def draw_item_box(self, inventory, cursor_active):
         """Zeichnet die Item-Box"""
         i = 50
         self.current_items.clear()
@@ -165,7 +169,10 @@ class Item_Box(Box):
             # Setzt den Cursor der Item-Box an die aktuelle Stelle und zeichnet ihn
             self.cursor.rect.x = self.postitions[self.current_position].x - 50 
             self.cursor.rect.y = self.postitions[self.current_position].y
-            pygame.draw.rect(self.screen,"black",self.cursor)
+            if cursor_active == False:
+                self.screen.blit(self.cursor.box_cursor_image, (self.cursor.rect.x,self.cursor.rect.y))
+            else:
+                self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
             
 
 class Ability_Box(Box):
@@ -178,7 +185,7 @@ class Ability_Box(Box):
         self.current_position = 0
 
     
-    def draw_ability_box(self,cat):
+    def draw_ability_box(self,cat,cursor_active1,cursor_active2):
         """Zeichnet die Item-Box"""
         i = 100
         self.postitions.clear()
@@ -199,7 +206,11 @@ class Ability_Box(Box):
             # Setzt den Cursor der Ability-Box an die aktuelle Stelle und zeichnet ihn
         self.cursor.rect.x = self.postitions[self.current_position].x - 50 
         self.cursor.rect.y = self.postitions[self.current_position].y
-        pygame.draw.rect(self.screen,"black",self.cursor)
+        if cursor_active1 == True or cursor_active2 == True:
+            self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
+        else:
+            self.screen.blit(self.cursor.box_cursor_image, (self.cursor.rect.x,self.cursor.rect.y))
+        
 
 
 

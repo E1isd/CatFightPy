@@ -40,8 +40,7 @@ class Cleric(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Item","Prayer"]
         
-        self.image = pygame.image.load("images/Cat-Healer/Cat-Healer new1.png").convert_alpha() #convert() für bessere Performance + _alpha, da transparente Pixel
-        self.image = pygame.transform.scale(self.image, (150, 150))
+        self.image = pygame.transform.scale(pygame.image.load("images/Cat-Healer/Cat-Healer new1.png").convert_alpha(), (150,150))
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
         self.rect.y = self.y_position

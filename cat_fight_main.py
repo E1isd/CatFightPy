@@ -119,6 +119,7 @@ class Cat_Fight:
             pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
             self.screen.blit(self.boss.image, (self.boss.x_position,self.boss.y_position))
+        
 
 
     def _draw_game_fields(self):
@@ -128,9 +129,9 @@ class Cat_Fight:
         if self.current_player in self.cat_heroes: # Wenn der aktuelle Kampfteilnehmer spielbar ist, wird die Action-Box gezeichnet
             self.action_box.draw_action_box(self.current_player)
         if self.item_box.active == True: # Wenn die Item-Box aktiv ist, wird sie gezeichnet
-            self.item_box.draw_item_box(self.current_inventory)
+            self.item_box.draw_item_box(self.current_inventory,self.single_cursor.active)
         if self.ability_box.active == True: # Wenn die Ability-Box aktiv ist, wird sie gezeichnet
-            self.ability_box.draw_ability_box(self.current_player)
+            self.ability_box.draw_ability_box(self.current_player,self.single_cursor.active,self.all_cursor.active)
         # Liest die Tooltip-Nachricht aus (wenn vorhanden) und zeichnet die Tooltip-Box(wenn aktiv):
         self.get_tooltip()
         self.tooltip_box.draw_tooltip_box(self.tooltip_message)
@@ -140,20 +141,20 @@ class Cat_Fight:
     def _draw_cursor(self):
         """Zeichnet die Cursor und Marker auf das Spielfeld"""
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt:
-        self.player_cursor.rect.x = self.current_player.rect.centerx - 10
-        self.player_cursor.rect.y = self.current_player.rect.y -30
-        pygame.draw.rect(self.screen,"black",self.player_cursor)
-
+        self.player_cursor.rect.x = self.current_player.rect.centerx - 16
+        self.player_cursor.rect.y = self.current_player.rect.y -40
+        self.screen.blit(self.player_cursor.current_player_image, (self.player_cursor.rect.x,self.player_cursor.rect.y))
+    
         # Der Cursor für das Auswählen eines Ziels wird nur gezeichnet, wenn er auch aktiv ist:
         if self.single_cursor.active == True:
             if self.target_group == self.enemies: # Koordinaten, wenn das Ziel zu den Gegnern gehört
                 self.single_cursor.rect.x = self.enemies[self.current_target].rect.right +10
-                self.single_cursor.rect.y = self.enemies[self.current_target].rect.centery -10
-                pygame.draw.rect(self.screen,"red",self.single_cursor)
+                self.single_cursor.rect.y = self.enemies[self.current_target].rect.centery -16
+                self.screen.blit(self.single_cursor.attack_cursor_image, (self.single_cursor.rect.x,self.single_cursor.rect.y))
             elif self.target_group == self.cat_heroes: # Koordinaten, wenn das Ziel zu den Katzen gehört
-                self.single_cursor.rect.x = self.cat_heroes[self.current_target].rect.left -20
-                self.single_cursor.rect.y = self.cat_heroes[self.current_target].rect.centery -10
-                pygame.draw.rect(self.screen,"green",self.single_cursor)
+                self.single_cursor.rect.x = self.cat_heroes[self.current_target].rect.left -40
+                self.single_cursor.rect.y = self.cat_heroes[self.current_target].rect.centery -16
+                self.screen.blit(self.single_cursor.heal_cursor_image, (self.single_cursor.rect.x,self.single_cursor.rect.y))
         # Der Cursor für das Auswählen aller Ziele einer Gruppe
         if self.all_cursor.active == True:
             if self.target_group == self.enemies:
