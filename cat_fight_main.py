@@ -34,7 +34,7 @@ class Cat_Fight:
         self.casting_cat = Mage(self,1200,600, "Mage")
 
         # Gegner:
-        self.boss = Necromancer(self,350,350,"The Evil Necromancer Cat")
+        self.boss = Necromancer(self,350,350,"Evil Necromancer Cat")
         self.minion_1 = Poison_Minion(self,650,300, "Cat-Minion 1")
         self.minion_2 = Rage_Minion (self,650,600, "Cat-Minion 2")
 
@@ -51,8 +51,8 @@ class Cat_Fight:
 
         # Schaltflächen:
         self.cat_box = Cat_Box(self,self.warrior_cat,self.healer_cat,self.casting_cat) # Katzennamen, HP & MP
-        self.enemy_box = Enemy_Box(self,self.boss,self.minion_1,self.minion_2) # Gegnernamen
         self.action_box = Action_Box(self,self.cat_box) # Box mit den Aktionsmöglichkeiten (Angriff etc.)
+        self.enemy_box = Enemy_Box(self,self.boss,self.minion_1,self.minion_2,self.action_box) # Gegnernamen
         self.item_box = Item_Box(self,self.action_box) # Box, die die verfügbaren Items anzeigt
         self.ability_box = Ability_Box(self,self.action_box) # Box, die die verfügbaren Abilitys anzeigt
         self.tooltip_box = Tooltip_Box(self) # Box, die Abilitys und Gegnerangriffe beschreibt 

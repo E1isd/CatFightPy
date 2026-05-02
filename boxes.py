@@ -15,6 +15,10 @@ class Box():
         self.border_color = (139,10,80)
 
 
+        self.poison_symbol = pygame.transform.smoothscale(pygame.image.load("images/poison-symbol.png").convert_alpha(), (24,24))
+        self.fire_symbol = pygame.transform.smoothscale(pygame.image.load("images/fire-symbol.png").convert_alpha(), (24,24))
+
+
 
 class Cat_Box(Box):
     """Klasse für die Oberfläche mit den Lebens- und Manaleisten der Katze"""
@@ -46,10 +50,10 @@ class Cat_Box(Box):
 
             # Schreibt Namen der Katze und falls es die aktuell aktive Katze ist, wird auch der Cursor an dem entsprechenden Namen gezeichnet
             if cat.status_effect == "poison":
-                None
+                self.screen.blit(self.poison_symbol,(self.rect.right - 150, self.rect.y + i ))
 
             if cat == current_cat:
-                color = (139,10,80)
+                color = (139,10,80)                             
                 name_box = self.font_freetype.render_to(self.screen,(self.rect.x +500, self.rect.y + i),f"{str(cat.name)}",color)
                 color = "black"
                 self.small_rect = pygame.Rect(name_box.x -10,name_box.y-10, name_box.width + 20, name_box.height +20)
@@ -82,9 +86,9 @@ class Cat_Box(Box):
 
 class Enemy_Box(Box):
     """Klasse für die Oberfläche mit den Feindnamen"""
-    def __init__(self,cf_game,enemy1,enemy2,enemy3):
+    def __init__(self,cf_game,enemy1,enemy2,enemy3,box):
         super().__init__(cf_game)
-        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,650,300)
+        self.rect = pygame.Rect(self.screen_rect.left+10, self.screen_rect.bottom -310,(self.screen_rect.left+10) + (box.rect.x -30),300)
         self.enemies = [enemy1,enemy2,enemy3]
     
     # Schreibt die Gegnernamen
@@ -96,7 +100,7 @@ class Enemy_Box(Box):
         pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
         for enemy in self.enemies:
             if enemy.is_alive == True: # Schreibt den Gegnernamen und HP nur, wenn der Gegner noch nicht getötet wurde
-                self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +i),f"{enemy.name}","Black")
+                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +i),f"{enemy.name}","Black")
                 hp_line = self.font_freetype.render_to(self.screen,(self.rect.right -150, self.rect.y + 50),"HP",color,None,pygame.freetype.STYLE_UNDERLINE)
 
                 # HP hier als Überschrift, damit sich die HP-Werte daran ausrichten können
@@ -107,6 +111,9 @@ class Enemy_Box(Box):
                 else:
                     color = "black"
                 self.font_freetype.render_to(self.screen,(hp_line.centerx - hp_line_spacing, self.rect.y +i),f"{str(enemy.current_hp)}",color)
+
+                if enemy.status_effect == "burn":
+                    self.screen.blit(self.fire_symbol,(name_box.right +20,self.rect.y +i ))
 
                 i +=50
 
