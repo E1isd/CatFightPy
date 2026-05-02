@@ -21,6 +21,7 @@ class Cat_Box(Box):
     def __init__(self,cf_game,cat1,cat2,cat3): # Nimmt als Parameter die drei Katzen
         super().__init__(cf_game)
         self.rect = pygame.Rect(self.screen_rect.right-810 ,self.screen_rect.bottom -310,800,300) # Erschafft das Rechteck der Schaltfläche
+        self.small_rect = None
         self.cats = [cat1,cat2,cat3] # Liste mit den drei Katzen
 
         
@@ -45,16 +46,18 @@ class Cat_Box(Box):
 
             # Schreibt Namen der Katze und falls es die aktuell aktive Katze ist, wird auch der Cursor an dem entsprechenden Namen gezeichnet
             if cat.status_effect == "poison":
-                color = "purple"
-                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +550, self.rect.y + i),f"{str(cat.name)}",color)
-                color = "black"
-            else: 
-                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +550, self.rect.y + i),f"{str(cat.name)}",color)
+                None
 
             if cat == current_cat:
-                self.cursor.rect.x = name_box.x -50
-                self.cursor.rect.y = name_box.y
-                pygame.draw.rect(self.screen,"black",self.cursor)
+                color = (139,10,80)
+                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +500, self.rect.y + i),f"{str(cat.name)}",color)
+                color = "black"
+                self.small_rect = pygame.Rect(name_box.x -10,name_box.y-10, name_box.width + 20, name_box.height +20)
+                pygame.draw.rect(self.screen,"white",self.small_rect,width=2,border_radius=10)
+
+            else: 
+                name_box = self.font_freetype.render_to(self.screen,(self.rect.x +500, self.rect.y + i),f"{str(cat.name)}",color)
+
 
             # Zeichnet Maximale HP & MP der Katze
             self.font_freetype.render_to(self.screen,(hp_line.centerx, self.rect.y +i),f"/ {str(cat.max_hp)}",color)

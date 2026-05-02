@@ -8,7 +8,7 @@ class Cursor():
         self.rect = pygame.Rect(x,y,20,20)
         self.active = False # Bool-Variable ob der Cursor aktiv (also steuerbar) ist
 
-        self.current_player_image = pygame.image.load("images/Cursor/current-player-cursor.png").convert_alpha()
+        self.current_player_sheet = pygame.image.load("images/Cursor/current-player-cursor-sheet.png").convert_alpha()
         self.cursor_inactive_image = pygame.image.load("images/Cursor/cursor-inactive.png").convert_alpha()
         self.box_cursor_sheet = pygame.image.load("images/Cursor/box-active-sheet.png").convert_alpha()
         self.attack_sheet = pygame.image.load("images/Cursor/attack-sheet.png").convert_alpha()

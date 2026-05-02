@@ -144,7 +144,8 @@ class Cat_Fight:
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt:
         self.player_cursor.rect.x = self.current_player.rect.centerx - 16
         self.player_cursor.rect.y = self.current_player.rect.y -40
-        self.screen.blit(self.player_cursor.current_player_image, (self.player_cursor.rect.x,self.player_cursor.rect.y))
+        self.single_cursor.draw_animated_cursor(self.player_cursor.current_player_sheet,self.player_cursor.rect.x,self.player_cursor.rect.y)
+        
     
         # Der Cursor für das Auswählen eines Ziels wird nur gezeichnet, wenn er auch aktiv ist:
         if self.single_cursor.active == True:
@@ -168,6 +169,7 @@ class Cat_Fight:
                     self.all_cursor.rect.x = cat.rect.right +10
                     self.all_cursor.rect.y = cat.rect.centery -10
                     self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
+        
 
 
  
