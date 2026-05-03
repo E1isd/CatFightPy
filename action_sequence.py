@@ -1,8 +1,9 @@
 import pygame
 import pygame.freetype
+from effects import Effects
 
 class Action():
-    """Klasse, die die Kampfsequenzen verwaltet, Damage kalkuliert und Animationen abpielt"""
+    """Klasse, die die Kampfsequenzen und Methoden zu den Abilitys verwaltet, sowie Damage kalkuliert und Animationen abspielt"""
     def __init__(self,cf_game):
         self.screen = cf_game.screen
         self.screen_rect = self.screen.get_rect()
@@ -19,6 +20,26 @@ class Action():
         self.x_pos = 0 # Variable für die x-Bewegung bei Animationen
         self.y_pos = 0 # Variable für die y-Bewegung bei Animationen
         self.frame = 0 # Variable für die Frames (Wichtig, um Zeit vergehen zu lassen bei Animationen)
+        
+        self.effects = Effects()
+
+        self.i = 0
+
+        self.effect_timer = 0
+        self.effect_delay = 200
+        self.effect_frame = 1
+        self.effect_animation_active = False
+        self.effect_animation_complete = False
+        self.current_effect_dict = {}
+        self.effect_x = 0
+        self.effect_y = 0
+        self.effect_image = ""
+
+        self.cat_animation_active = False
+        self.cat_animation_complete = False
+        self.cat_timer = 0
+        self.cat_delay = 200
+        self.current_cat_dict = {}
 
         self.message = ""
 
@@ -100,6 +121,30 @@ class Action():
             self.font_color = "red"
             self.message = f"{player.name} is burning."
 
+    
+    def draw_simple_effect(self):
+        if self.effect_animation_active == True:
+            self.screen.blit(self.effect_image,(self.effect_x,self.effect_y),(0 + self.i,0,self.current_effect_dict["size"] * self.current_effect_dict["scale"] ,self.current_effect_dict["size"] * self.current_effect_dict["scale"]))
+            current_time = pygame.time.get_ticks()
+            if (current_time - self.effect_timer) >= self.effect_delay:
+                self.effect_timer = current_time
+                self.i += self.current_effect_dict["size"] * self.current_effect_dict["scale"]
+                self.effect_frame += 1
+                if self.effect_frame > self.current_effect_dict["frames"]:
+                    self.i = 0
+                    self.effect_frame = 0
+                    self.effect_animation_active = False
+                    self.effect_animation_complete = True
+
+
+
+
+
+
+
+        
+
+
             
 
 
@@ -154,11 +199,21 @@ class Action():
     
     def prayer_of_ressurection(self,healer,target):
         """Methode für das Gebet zur Wiederbelebung"""
-        if target.is_alive == False:
-            target.is_alive = True
-            target.got_heal = int(30 + healer.magic/2)
-            self.calculate_damage_or_heal(target,self.healed_group)
-        self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
+        if self.effect_animation_active == False and self.effect_animation_complete == False:
+            self.effect_animation_active = True
+            self.current_effect_dict = self.effects.dict_p_of_res
+            self.effect_image = pygame.transform.scale_by(pygame.image.load(self.current_effect_dict["image"]).convert_alpha(),self.current_effect_dict["scale"])
+            self.effect_x = target.rect.x -50
+            self.effect_y = target.rect.y -110
+        healer.image = healer.image_pray
+        if self.effect_animation_complete == True: 
+            if target.is_alive == False:
+                target.is_alive = True
+                target.got_heal = int(30 + healer.magic/2)
+                self.calculate_damage_or_heal(target,self.healed_group)
+            self.effect_animation_complete = False
+            self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
+            healer.image = healer.image_default
 
 
     ### Magier-Aktionen###

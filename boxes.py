@@ -13,6 +13,7 @@ class Box():
         self.cursor = Cursor(self,0,0) # Der Cursor für die Box 
         self.box_color = (255,182,193)
         self.border_color = (139,10,80)
+        
 
 
         self.poison_symbol = pygame.transform.smoothscale(pygame.image.load("images/poison-symbol.png").convert_alpha(), (24,24))

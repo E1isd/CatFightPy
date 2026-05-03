@@ -40,7 +40,9 @@ class Cleric(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Item","Prayer"]
         
-        self.image = pygame.transform.scale(pygame.image.load("images/Cat-Healer/Cat-Healer new1.png").convert_alpha(), (150,150))
+        self.image = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha(), 3)
+        self.image_default = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha(), 3)
+        self.image_pray = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-pray.png").convert_alpha(), 3)
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
         self.rect.y = self.y_position
@@ -56,12 +58,12 @@ class Cleric(Cat):
 
         #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
         self.sprites = []
-        sprite1 = pygame.image.load("images/Cat-Healer/Cat-Healer new1.png").convert_alpha()
-        sprite1 = pygame.transform.scale(sprite1, (150, 150))
+        sprite1 = pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha()
+        sprite1 = pygame.transform.scale_by(sprite1, 3)
         self.sprites.append(sprite1)
         
-        sprite2 = pygame.image.load("images/Cat-Healer/Cat-Healer new1.png").convert_alpha()
-        sprite2 = pygame.transform.scale(sprite2, (150, 150))
+        sprite2 = pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha()
+        sprite2 = pygame.transform.scale_by(sprite2, 3)
         self.sprites.append(sprite2)
         
         self.current_sprite = 0

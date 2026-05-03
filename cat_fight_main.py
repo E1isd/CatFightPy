@@ -172,7 +172,6 @@ class Cat_Fight:
         
 
 
- 
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
         # Sprite-Animation für alle Charaktere (Helden und Gegner), die gerade an der Reihe sind
@@ -183,6 +182,8 @@ class Cat_Fight:
             self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
         elif self.show_status == True:
             self.battle_sequencer.draw_damage_numbers(self.battle_sequencer.font_color)
+        
+        self.battle_sequencer.draw_simple_effect()
 
     def get_tooltip(self):
         """Funktion, um die Nachricht für die Tooltip-Box auszulesen"""
@@ -194,6 +195,7 @@ class Cat_Fight:
             self.tooltip_message = self.battle_sequencer.message
         else: # Wenn kein Element mit Tooltip angewählt ist, bleibt die Message leer
             self.tooltip_message = ""
+
         
 
     def _check_events(self):
