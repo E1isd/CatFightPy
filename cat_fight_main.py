@@ -49,6 +49,7 @@ class Cat_Fight:
         self.cat_heroes = [self.warrior_cat,self.healer_cat,self.casting_cat] # Nach dem zufälligen Mischen, wird die Reihenfolge wieder normal gesetzt. Wichtig für die korrekte Cursor Auswahl
         self.target_group = [] # Die aktuelle angewählte Gruppe, wichtig für die Erschaffung des Auswähl-Cursors und für Fähigkeitssequenzen
 
+
         # Schaltflächen:
         self.cat_box = Cat_Box(self,self.warrior_cat,self.healer_cat,self.casting_cat) # Katzennamen, HP & MP
         self.action_box = Action_Box(self,self.cat_box) # Box mit den Aktionsmöglichkeiten (Angriff etc.)
@@ -112,16 +113,17 @@ class Cat_Fight:
         """Zeichnet die Spielfiguren"""
         pygame.draw.rect(self.screen,"red",self.warrior_cat)
         pygame.draw.rect(self.screen,"blue",self.casting_cat)
-        self.screen.blit(self.healer_cat.image, (self.healer_cat.x_position,self.healer_cat.y_position))
+        
         if self.minion_1.is_alive == True:
             pygame.draw.rect(self.screen,"green",self.minion_1)
         if self.minion_2.is_alive == True:
             pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
             self.screen.blit(self.boss.image, (self.boss.x_position,self.boss.y_position))
+        if not self.battle_sequencer.cat_animation_active:
+            self.screen.blit(self.healer_cat.image, (self.healer_cat.x_position,self.healer_cat.y_position))
 
         
-
 
     def _draw_game_fields(self):
         """Zeichnet die Schaltflächen des Kampfbildschirms"""
@@ -175,15 +177,16 @@ class Cat_Fight:
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
         # Sprite-Animation für alle Charaktere (Helden und Gegner), die gerade an der Reihe sind
-        if self.current_player:
+        if self.current_player and not self.battle_sequencer.cat_animation_active:
             self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation
 
         if self.show_status == False:
             self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
         elif self.show_status == True:
             self.battle_sequencer.draw_damage_numbers(self.battle_sequencer.font_color)
-        
+        self.battle_sequencer.draw_cat_action_animation(self.current_player)      
         self.battle_sequencer.draw_simple_effect()
+
 
     def get_tooltip(self):
         """Funktion, um die Nachricht für die Tooltip-Box auszulesen"""
@@ -211,7 +214,7 @@ class Cat_Fight:
         if event.key == pygame.K_q: # Event für Beenden des Spieles (Taste Q)
             sys.exit()
         if event.key == pygame.K_SPACE: # !TEMPORÄR um die Runden schnell zu skippen!!!
-            if not self.current_action:
+            if not self.current_action and not self.show_status:
                 self.current_player.action = False
                 if self.single_cursor.active == True or self.all_cursor.active:
                     self._create_or_delete_cursor(None)

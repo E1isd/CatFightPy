@@ -23,7 +23,7 @@ class Action():
         
         self.effects = Effects()
 
-        self.i = 0
+        self.i_effect = 0
 
         self.effect_timer = 0
         self.effect_delay = 200
@@ -39,7 +39,9 @@ class Action():
         self.cat_animation_complete = False
         self.cat_timer = 0
         self.cat_delay = 200
+        self.cat_frame = 1
         self.current_cat_dict = {}
+        self.i_cat = 0
 
         self.message = ""
 
@@ -124,17 +126,41 @@ class Action():
     
     def draw_simple_effect(self):
         if self.effect_animation_active == True:
-            self.screen.blit(self.effect_image,(self.effect_x,self.effect_y),(0 + self.i,0,self.current_effect_dict["size"] * self.current_effect_dict["scale"] ,self.current_effect_dict["size"] * self.current_effect_dict["scale"]))
+            self.screen.blit(self.effect_image,(self.effect_x,self.effect_y),(0 + self.i_effect,0,self.current_effect_dict["size"] * self.current_effect_dict["scale"] ,self.current_effect_dict["size"] * self.current_effect_dict["scale"]))
             current_time = pygame.time.get_ticks()
             if (current_time - self.effect_timer) >= self.effect_delay:
                 self.effect_timer = current_time
-                self.i += self.current_effect_dict["size"] * self.current_effect_dict["scale"]
+                self.i_effect += self.current_effect_dict["size"] * self.current_effect_dict["scale"]
                 self.effect_frame += 1
                 if self.effect_frame > self.current_effect_dict["frames"]:
-                    self.i = 0
+                    self.i_effect = 0
                     self.effect_frame = 0
                     self.effect_animation_active = False
                     self.effect_animation_complete = True
+    
+    def draw_cat_action_animation(self,cat):
+        if self.cat_animation_active == True:
+            self.screen.blit(cat.image,(cat.x_position,cat.y_position),(0 + self.i_cat,0,self.current_cat_dict["size"] * self.current_cat_dict["scale"] ,self.current_cat_dict["size"] * self.current_cat_dict["scale"]))
+            current_time = pygame.time.get_ticks()
+            if (current_time - self.cat_timer) >= self.cat_delay:
+                self.cat_timer = current_time
+                self.i_cat += self.current_cat_dict["size"] * self.current_cat_dict["scale"]
+                self.cat_frame += 1
+                if self.cat_frame >= self.current_cat_dict["frames"]:
+                    if self.current_cat_dict["wait"] == True:
+                        if not self.effect_animation_complete:
+                            self.i_cat = (self.current_cat_dict["size"] * self.current_cat_dict["scale"]) * (self.current_cat_dict["frames"] - 1)
+                        else:
+                            self.cat_animation_complete = True
+                    else:
+                        self.cat_animation_complete = True
+            if self.cat_animation_complete == True:
+                    self.i_cat = 0
+                    self.cat_frame = 0
+                    cat.image = cat.image_default
+                    self.cat_animation_active = False
+
+
 
 
 
@@ -199,21 +225,26 @@ class Action():
     
     def prayer_of_ressurection(self,healer,target):
         """Methode für das Gebet zur Wiederbelebung"""
-        if self.effect_animation_active == False and self.effect_animation_complete == False:
-            self.effect_animation_active = True
+        if not self.cat_animation_active and not self.effect_animation_active and not self.cat_animation_complete and not self.effect_animation_complete:
+            self.cat_animation_active = True
             self.current_effect_dict = self.effects.dict_p_of_res
             self.effect_image = pygame.transform.scale_by(pygame.image.load(self.current_effect_dict["image"]).convert_alpha(),self.current_effect_dict["scale"])
             self.effect_x = target.rect.x -50
             self.effect_y = target.rect.y -110
-        healer.image = healer.image_pray
-        if self.effect_animation_complete == True: 
+            self.current_cat_dict = self.effects.dict_cleric_pray
+            healer.image = pygame.transform.scale_by(pygame.image.load(self.current_cat_dict["image"]).convert_alpha(),self.current_cat_dict["scale"])
+        if self.cat_animation_active == True and not self.effect_animation_active and self.cat_frame == self.current_cat_dict["effect_start"]:
+            print(self.cat_frame)
+            self.effect_animation_active = True
+        if self.cat_animation_complete == True and self.effect_animation_complete == True: 
             if target.is_alive == False:
                 target.is_alive = True
                 target.got_heal = int(30 + healer.magic/2)
                 self.calculate_damage_or_heal(target,self.healed_group)
             self.effect_animation_complete = False
+            self.cat_animation_complete = False
             self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
-            healer.image = healer.image_default
+            
 
 
     ### Magier-Aktionen###
