@@ -50,7 +50,7 @@ class Action():
 
         # Liste mit den Methoden für alle Abilitys im Spiel:
         self.all_abilities = [self.berserker_claw, self.knock_out, self.prayer_of_lesser_healing , self.prayer_of_ressurection, self.prayer_of_healing_wind,
-                              self.fireball, self.whirlwind ]
+                              self.fireball, self.whirlwind, self.protect ]
                               
 
         self.enemy_abilities = [self.default_attack,self.poison_claw, self.fury_claws]
@@ -129,6 +129,8 @@ class Action():
             self.message = f"{player.name} is burning ({player.burn_timer} more rounds)"
         if effect == "stun":
             player.stun_timer -=1
+        if effect == "protect":
+            player.protect_timer -=1
 
 
 
@@ -291,6 +293,19 @@ class Action():
             target.got_damage = 20 + attacker.magic - target.magic_defence
             self.calculate_damage_or_heal(target,self.damage_group)
         self.action_sequence_active = False
+    
+    def protect(self, supporter, target_group):
+        """Methode für Schutzzauber auf alle Katzen"""
+        for target in target_group:
+            if "protect" not in target.status_effects:
+                target.status_effects.append("protect")
+                target.defence += 20
+            target.protect_timer = 3
+            print(supporter)
+
+        self.action_sequence_active = False
+
+
 
 
 

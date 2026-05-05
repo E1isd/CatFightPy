@@ -19,6 +19,7 @@ class Box():
         self.poison_symbol = pygame.transform.smoothscale(pygame.image.load("images/poison-symbol.png").convert_alpha(), (24,24))
         self.fire_symbol = pygame.transform.smoothscale(pygame.image.load("images/fire-symbol.png").convert_alpha(), (24,24))
         self.stun_symbol = pygame.transform.smoothscale(pygame.image.load("images/stun-symbol.png").convert_alpha(), (24,24))
+        self.protect_symbol = pygame.transform.smoothscale(pygame.image.load("images/protect-symbol.png").convert_alpha(), (24,24))
 
 
 
@@ -62,7 +63,10 @@ class Cat_Box(Box):
                         x -= 30
                     elif effect == "stun":
                         self.screen.blit(self.stun_symbol,(self.rect.right - x, self.rect.y + i ))
-                        x -= 30                      
+                        x -= 30        
+                    elif effect == "protect":   
+                        self.screen.blit(self.protect_symbol,(self.rect.right - x, self.rect.y + i ))
+                        x -= 30               
 
             if cat == current_cat:
                 # Zeichnet ein kleines Rechteck um den Namen der aktuell ausgewählten Katze und ändert die Schriftfarbe des Namens

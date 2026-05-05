@@ -400,6 +400,10 @@ class Cat_Fight:
             self.current_player.status_effects.remove("burn")
         if "stun" in self.current_player.status_effects and self.current_player.stun_timer == 0:
             self.current_player.status_effects.remove("stun")
+        if "protect" in self.current_player.status_effects and self.current_player.protect_timer == 0:
+            self.current_player.status_effects.remove("protect")
+            self.current_player.defence -=20
+
                 
 
 
@@ -448,6 +452,8 @@ class Cat_Fight:
                 if self.battle_sequencer.action_sequence_active == False:
                     if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
                         self.battle_sequencer.damage_sequence_active = True
+                    else:
+                        self.battle_sequencer.damage_sequence_active = False
             elif self.battle_sequencer.action_sequence_active == True and self.current_player in self.enemies:
                 # Prüfen ob 3 Sekunden vergangen sind seit dem Start des Gegnerzugs
                 if self.battle_sequencer.enemy_attack_ready == False:
@@ -468,6 +474,7 @@ class Cat_Fight:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
                 self.current_action = None
                 self.current_player.action = False
+                print(self.current_player.name)
 
     def _check_if_alive(self):
         """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
@@ -475,7 +482,7 @@ class Cat_Fight:
             for player in self.fighting_order:
                 if player.current_hp <= 0: # Wenn die aktuelle HP kleiner gleich 0 ist, wird die Lebens-Variable auf False gesetzt
                     player.is_alive = False
-                    player.status_effect = None
+                    player.status_effects.clear()
         # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
         for enemy in self.enemies:
             if enemy.is_alive == False:

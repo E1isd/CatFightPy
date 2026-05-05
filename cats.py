@@ -20,6 +20,7 @@ class Cat(Sprite):
         # Timer für Statuseffekte
         self.stun_timer = 0
         self.burn_timer = 0
+        self.protect_timer = 0
 
 
 
@@ -106,7 +107,7 @@ class Mage(Cat):
         self.attack = 50
         self.magic = 200
 
-        self.learned_abilities=[self.abilities.fireball, self.abilities.whirlwind]
+        self.learned_abilities=[self.abilities.fireball, self.abilities.whirlwind, self.abilities.protect]
 
 
 
