@@ -127,6 +127,7 @@ class Action():
             self.font_color = "red"
             self.message = f"{player.name} is burning."
         if effect == "stun":
+            self.action_sequence_active = False
             player.action = False
 
 

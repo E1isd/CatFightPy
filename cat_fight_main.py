@@ -486,6 +486,8 @@ class Cat_Fight:
             self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl
             self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
             self.target_group = [] # Die angewählte Gruppe wird wieder zurückgesetzt
+            self.show_status = False
+            self.tooltip_box.active = False
             self.status_done = False # Die Bool-Variable für die Statusabhandlung wird wieder zurückgesetzt
             self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
             self.action_box.active = True # Die Aktionsbox wird standardmäßig wieder auf aktiv gesetzt

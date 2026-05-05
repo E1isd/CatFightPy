@@ -60,6 +60,9 @@ class Cat_Box(Box):
                     elif effect == "burn":
                         self.screen.blit(self.fire_symbol,(self.rect.right - x, self.rect.y + i ))
                         x -= 30
+                    elif effect == "stun":
+                        self.screen.blit(self.stun_symbol,(self.rect.right - x, self.rect.y + i ))
+                        x -= 30                      
 
             if cat == current_cat:
                 # Zeichnet ein kleines Rechteck um den Namen der aktuell ausgewählten Katze und ändert die Schriftfarbe des Namens
