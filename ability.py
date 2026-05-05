@@ -12,10 +12,12 @@ class Ability:
     ######## Fähigkeiten der Katzen ########
     # Kriegerfähigkeiten
         self.berserker_claw = {"name":"Berserker Claw","mp_cost":10,"tooltip":"Unleashes fury of claws upon one enemy","target":"enemy","t_number":"single","method":"berserker_claw"}
+        self.knock_out = {"name": "Knock Out", "mp_cost":5,"tooltip":"Causes a modeate amount of damage and stuns the enemy for 1 turn.","target":"enemy","t_number":"single","method":"knock_out"}
 
     # Heilerfähigkeiten
         self.prayer_of_lesser_healing = {"name":"Prayer Of Lesser Healing","mp_cost":10,"tooltip": "Prayer to heal a single cat with a small amount of life","target":"cat","t_number":"single","method":"prayer_of_lesser_healing"}
         self.prayer_of_ressurection = {"name":"Prayer Of Ressurection","mp_cost":20,"tooltip":"Prayer to bring back a single cat with a small amount of life","target":"cat", "t_number":"single", "method":"prayer_of_ressurection"}
+        self.prayer_of_healing_wind = {"name":"Prayer Of Healing Wind","mp_cost":20,"tooltip":"Prayer to heal all cats with a small amount of life", "target":"cat","t_number":"all","method":"prayer_of_healing_wind"}
 
     # Magierfähigkeiten
         self.fireball = {"name":"Fireball","mp_cost":10,"tooltip":"A small fireball for lesser fire damage upon one enemy","target":"enemy","t_number":"single","method":"fireball"}
@@ -24,6 +26,6 @@ class Ability:
 
     ####### Fähigkeiten der Gegner #####
 
-    # Standardangriff
-        self.simple_attack = {"target":"cat","t_number":"single","method":"default_attack"}
-        self.poison_claw = {"target":"cat","t_number":"single","method":"poison_claw"}
+        self.simple_attack = {"target":"cat","t_number":"single","method":"default_attack"} # Standardangriff
+        self.poison_claw = {"target":"cat","t_number":"single","method":"poison_claw"} 
+        self.fury_claws = {"target":"cat","t_number":"all","method":"fury_claws"} 

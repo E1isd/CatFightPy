@@ -14,7 +14,7 @@ class Enemy(Sprite):
         self.got_damage = 0
         self.is_alive = True
         self.abilities = Ability()
-        self.status_effect = None
+        self.status_effects = []
 
 
 class Necromancer(Enemy):
@@ -149,4 +149,4 @@ class Rage_Minion(Enemy):
         self.attack = 300
         self.magic = 100
         self.magic_defence = 50
-        self.available_skills = [self.abilities.simple_attack]
+        self.available_skills = [self.abilities.simple_attack, self.abilities.fury_claws]

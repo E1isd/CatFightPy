@@ -15,9 +15,10 @@ class Box():
         self.border_color = (139,10,80)
         
 
-
+        # Symbole für Statusveränderungen
         self.poison_symbol = pygame.transform.smoothscale(pygame.image.load("images/poison-symbol.png").convert_alpha(), (24,24))
         self.fire_symbol = pygame.transform.smoothscale(pygame.image.load("images/fire-symbol.png").convert_alpha(), (24,24))
+        self.stun_symbol = pygame.transform.smoothscale(pygame.image.load("images/stun-symbol.png").convert_alpha(), (24,24))
 
 
 
@@ -49,11 +50,19 @@ class Cat_Box(Box):
             hp_line_spacing = self.font_freetype.get_rect(f"{cat.current_hp} ").width
             mp_line_spacing = self.font_freetype.get_rect(f"{cat.current_mp} ").width
 
-            # Schreibt Namen der Katze und falls es die aktuell aktive Katze ist, wird auch der Cursor an dem entsprechenden Namen gezeichnet
-            if cat.status_effect == "poison":
-                self.screen.blit(self.poison_symbol,(self.rect.right - 150, self.rect.y + i ))
+            # Zeichnet das Statuseffekt-Symbol neben dem Namen
+            x = 150
+            if cat.status_effects:
+                for effect in cat.status_effects:
+                    if effect == "poison":
+                        self.screen.blit(self.poison_symbol,(self.rect.right - x, self.rect.y + i ))
+                        x -= 30
+                    elif effect == "burn":
+                        self.screen.blit(self.fire_symbol,(self.rect.right - x, self.rect.y + i ))
+                        x -= 30
 
             if cat == current_cat:
+                # Zeichnet ein kleines Rechteck um den Namen der aktuell ausgewählten Katze und ändert die Schriftfarbe des Namens
                 color = (139,10,80)                             
                 name_box = self.font_freetype.render_to(self.screen,(self.rect.x +500, self.rect.y + i),f"{str(cat.name)}",color)
                 color = "black"
@@ -113,8 +122,19 @@ class Enemy_Box(Box):
                     color = "black"
                 self.font_freetype.render_to(self.screen,(hp_line.centerx - hp_line_spacing, self.rect.y +i),f"{str(enemy.current_hp)}",color)
 
-                if enemy.status_effect == "burn":
-                    self.screen.blit(self.fire_symbol,(name_box.right +20,self.rect.y +i ))
+                # Zeichnet ein Statuseffekt-Symbol neben dem Namen wenn nötig
+                x = 20
+                if enemy.status_effects:
+                    for effect in enemy.status_effects:
+                        if effect == "burn":
+                            self.screen.blit(self.fire_symbol,(name_box.right +x,self.rect.y +i ))
+                            x += 30
+                        elif effect == "poison":
+                            self.screen.blit(self.poison_symbol,(name_box.right +x,self.rect.y +i ))
+                            x += 30
+                        elif effect == "stun":
+                            self.screen.blit(self.stun_symbol,(name_box.right +x,self.rect.y +i ))
+                            x += 30
 
                 i +=50
 
@@ -267,7 +287,7 @@ class Help_Box(Box):
             help_length = self.font_freetype_small.get_rect("Press To Show Help").width + 5
 
             if self.active == True: # Zeichnet die Hilfs-Box wenn sie aktiviert ist
-                self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Hide Help","Black")
+                self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Hide Help","White")
                 char_length = self.font_freetype_small.get_rect("UP/DOWN").width
                 pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
                 pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
@@ -280,7 +300,7 @@ class Help_Box(Box):
                 self.font_freetype_small.render_to(self.screen,(self.rect.x + 40, self.rect.y + 200),"Q:","Black")
                 self.font_freetype_small.render_to(self.screen,((self.rect.x + 40) + (char_length + 30), self.rect.y + 200),"Quit Game","Black")
             else: # Zeichnet nur einen Text, wenn die Hilfs-Box nicht aktiviert ist
-                self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Show Help","Black")
+                self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Show Help","White")
 
 
 

@@ -14,8 +14,8 @@ class Cat(Sprite):
         self.is_alive = True # Bool-Variable, ob der Charakter noch am Leben ist
         self.got_damage = 0 # Variable für den Schaden, den ein Charakter erlitten hat
         self.got_heal = 0 # Variable für die Heilung, die ein Charakter erhalten hat
-        self.status_effect = None # Bool-Variable, die überprüft, ob die Katze einen Statuseffekt hat
-        self.abilities = Ability()
+        self.status_effects = [] # Liste aller im Kampf erhaltenen Statuseffekte
+        self.abilities = Ability() # Instanz des Ability-Dictonarys
 
 
 
@@ -32,7 +32,7 @@ class Warrior(Cat):
         self.defence = 150
         self.attack = 200
         self.magic = 50
-        self.learned_abilities=[self.abilities.berserker_claw] # Die bisher gelernten Fähigkeiten der Klasse
+        self.learned_abilities=[self.abilities.berserker_claw, self.abilities.knock_out] # Die bisher gelernten Fähigkeiten der Klasse
 
 class Cleric(Cat):
     """Klasse für den Heiler"""
@@ -40,9 +40,10 @@ class Cleric(Cat):
         super().__init__(ct_game,start_x,start_y,name)
         self.actions = ["Attack","Item","Prayer"]
         
+        # Das aktuelle Bild der Katze
         self.image = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha(), 3)
+        # Der Wert für das Standardbild der Katze, wenn keine Kampf- oder Idleanimation festgesetzt ist.
         self.image_default = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha(), 3)
-        self.image_pray = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-pray.png").convert_alpha(), 3)
         self.rect = self.image.get_rect()
         self.rect.x = self.x_position
         self.rect.y = self.y_position
@@ -54,7 +55,7 @@ class Cleric(Cat):
         self.attack = 70
         self.magic = 150
 
-        self.learned_abilities=[self.abilities.prayer_of_lesser_healing,self.abilities.prayer_of_ressurection]
+        self.learned_abilities=[self.abilities.prayer_of_lesser_healing,self.abilities.prayer_of_ressurection, self.abilities.prayer_of_healing_wind]
 
         #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
         self.sprites = []

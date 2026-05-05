@@ -24,19 +24,20 @@ class Cat_Fight:
         self.screen = pygame.display.set_mode((1920,1080),pygame.SCALED | pygame.FULLSCREEN)# Initialisiert den Bildschirm auf dem das Spiel stattfindet (in Vollbild)
         self.screen_rect = self.screen.get_rect()
         self.bg_color = (200, 205, 220) # Variable für Hintergrundfarbe des Blockes in RGB-Werten
+        self.background = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(),(1920,1080))
         pygame.display.set_caption("Katzen RPG")# Text für die Fensterzeile
 
         self.clock = pygame.time.Clock() #Clock misst die Zeit und ist für die Framerate wichtig
 
         # Heldenkatzen:
-        self.warrior_cat = Warrior(self,1100,200,"Warrior")
-        self.healer_cat = Cleric (self,1150,400, "Cleric")
-        self.casting_cat = Mage(self,1200,600, "Mage")
+        self.warrior_cat = Warrior(self,1100,370,"Warrior")
+        self.healer_cat = Cleric (self,1150,470, "Cleric")
+        self.casting_cat = Mage(self,1200,620, "Mage")
 
         # Gegner:
         self.boss = Necromancer(self,350,350,"Evil Necromancer Cat")
-        self.minion_1 = Poison_Minion(self,650,300, "Cat-Minion 1")
-        self.minion_2 = Rage_Minion (self,650,600, "Cat-Minion 2")
+        self.minion_1 = Poison_Minion(self,650,370, "Cat-Minion 1")
+        self.minion_2 = Rage_Minion (self,650,620, "Cat-Minion 2")
 
         self.current_inventory = Inventory(self) # Klasse für das aktuelle Inventar
 
@@ -80,11 +81,10 @@ class Cat_Fight:
         self.battle_sequencer = Action(self) # Klasse, die die gesamte Kampfabfolge (Angriffe, Schaden, Animationen) abhandelt
         self.current_action = None # In dieser Variable wird die aktuelle Kampfaktion gespeichert
 
-        self.show_status = False
-        self.status_done = False
+        self.show_status = False # Bool-Variable für das Anzeigen eines Statuseffekt
+        self.status_i = None
+        self.status_done = False # Bool-Variable, die angibt, dass die Statuseffekt-Anzeige fertig ist
         
-
-        self.current_effects = pygame.sprite.Group() # !!! Aktuell noch inaktiv !!!
 
 
     def run_game(self): # Hauptfunktion (Ereignisse checken, Bildschirm/Sprites aktualisieren)
@@ -92,7 +92,7 @@ class Cat_Fight:
         while True:
             self._check_events() # Überprüft, ob in diesem Frame Tasteneingaben stattfinden
             self._check_start_turn() # Überprüft, ob gerade eine neue Runde gestartet ist
-            self.check_status_effect()
+            self.check_status_effect() # Überprüft, ob Statusveränderungen vorliegen und handelt ihre Effekte ab
             self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
             self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
             self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
@@ -101,7 +101,7 @@ class Cat_Fight:
  
     def _update_screen(self):
         """Zeichnet der Bildschirm mit allen Spielelementen neu"""
-        self.screen.fill(self.bg_color) #Füllt den Hintergrund des Spielfensters
+        self.screen.blit(self.background, (0,0))
         self._draw_game_fields() # Zeichnet die Schaltflächen 
         self._draw_charakters() # Zeichnet die Spielfiguren
         self._draw_cursor() # Zeichnet die Cursor
@@ -120,7 +120,9 @@ class Cat_Fight:
             pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
             self.screen.blit(self.boss.image, (self.boss.x_position,self.boss.y_position))
-        if not self.battle_sequencer.cat_animation_active:
+            # Zeichnet die Katze nur in ihrer Standard/Idle Pose wenn gerade keine Aktion-Animation vorliegt !Muss später noch abgeändert werden,
+            # wenn alle Katzen als Grafik vorliegen.
+        if not self.battle_sequencer.cat_animation_active: 
             self.screen.blit(self.healer_cat.image, (self.healer_cat.x_position,self.healer_cat.y_position))
 
         
@@ -139,8 +141,18 @@ class Cat_Fight:
         self.get_tooltip()
         self.tooltip_box.draw_tooltip_box(self.tooltip_message)
         self.help_box.draw_help_box()
-        
 
+    def get_tooltip(self):
+        """Funktion, um die Nachricht für die Tooltip-Box auszulesen"""
+        if self.item_box.active == True:  # Die Tooltip-Message wird aus dem Inventory-Dictonary gelesen
+            self.tooltip_message = self.item_box.current_items[self.item_box.current_position]["tooltip"]
+        elif self.ability_box.active == True: # Die Tooltip-Message wird aus dem Ability-Dictonary gelesen
+            self.tooltip_message = self.current_player.learned_abilities[self.ability_box.current_position]["tooltip"]
+        elif self.show_status == True: # Wenn ein Status-Effekt abgehandelt wird, wird eine entsprechende Nachricht abgespielt
+            self.tooltip_message = self.battle_sequencer.message
+        else: # Wenn kein Element mit Tooltip angewählt ist, bleibt die Message leer
+            self.tooltip_message = ""     
+        
     def _draw_cursor(self):
         """Zeichnet die Cursor und Marker auf das Spielfeld"""
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt:
@@ -148,7 +160,6 @@ class Cat_Fight:
         self.player_cursor.rect.y = self.current_player.rect.y -40
         self.single_cursor.draw_animated_cursor(self.player_cursor.current_player_sheet,self.player_cursor.rect.x,self.player_cursor.rect.y)
         
-    
         # Der Cursor für das Auswählen eines Ziels wird nur gezeichnet, wenn er auch aktiv ist:
         if self.single_cursor.active == True:
             if self.target_group == self.enemies: # Koordinaten, wenn das Ziel zu den Gegnern gehört
@@ -168,10 +179,9 @@ class Cat_Fight:
                     self.all_cursor.draw_animated_cursor(self.all_cursor.attack_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
             elif self.target_group == self.cat_heroes:
                 for cat in self.cat_heroes:
-                    self.all_cursor.rect.x = cat.rect.right +10
-                    self.all_cursor.rect.y = cat.rect.centery -10
+                    self.all_cursor.rect.x = cat.rect.left -40
+                    self.all_cursor.rect.y = cat.rect.centery -16
                     self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
-        
 
 
     def _draw_effects(self):
@@ -181,25 +191,15 @@ class Cat_Fight:
             self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation
 
         if self.show_status == False:
-            self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern
+            self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern nach einem Angriff
         elif self.show_status == True:
-            self.battle_sequencer.draw_damage_numbers(self.battle_sequencer.font_color)
-        self.battle_sequencer.draw_cat_action_animation(self.current_player)      
-        self.battle_sequencer.draw_simple_effect()
+            self.battle_sequencer.draw_damage_numbers(self.battle_sequencer.font_color) # Zeichnet die Statuseffekt-Schadenszahlen
+
+        self.battle_sequencer.draw_cat_action_animation(self.current_player) # Zeichnet die Katzen-Kampf-Animation (wenn aktiv)      
+        self.battle_sequencer.draw_simple_effect() # Zeichnet die Kampfeffekte (wenn aktiv)
 
 
-    def get_tooltip(self):
-        """Funktion, um die Nachricht für die Tooltip-Box auszulesen"""
-        if self.item_box.active == True:  # Die Tooltip-Message wird aus dem Inventory-Dictonary gelesen
-            self.tooltip_message = self.item_box.current_items[self.item_box.current_position]["tooltip"]
-        elif self.ability_box.active == True: # Die Tooltip-Message wird aus dem Ability-Dictonary gelesen
-            self.tooltip_message = self.current_player.learned_abilities[self.ability_box.current_position]["tooltip"]
-        elif self.show_status == True:
-            self.tooltip_message = self.battle_sequencer.message
-        else: # Wenn kein Element mit Tooltip angewählt ist, bleibt die Message leer
-            self.tooltip_message = ""
 
-        
 
     def _check_events(self):
         """Wartet auf Tasteneingaben vom Spieler"""
@@ -331,6 +331,21 @@ class Cat_Fight:
                 self.help_box.active = False
             else:
                 self.help_box.active = True
+
+    def _create_or_delete_cursor(self,group): # Als Parameter die Gruppe, deren Charakter(e) anwählbar sein sollen
+        """Erschafft oder Löscht den Angriffscursor"""
+        self.target_group = group
+        # Aufgrund des Dictonary-Eintrags der aktuell ausgewählten Fähigkeit wird ermittelt, ob Cursor für ein Einzelziel oder
+        # für alle Ziele der entsprechenden Gruppe gezeichnet werden sollen:
+        if self.ability_box.active == True and self.current_player.learned_abilities[self.ability_box.current_position]["t_number"] == "all":
+            cursor = self.all_cursor
+        else:
+            cursor = self.single_cursor
+        if cursor.active == True: # Falls bereits ein Auswahlcursor aktiv ist, wird er durch diesen Befehl wieder deaktivert
+            cursor.active = False
+        else:
+            cursor.active = True
+
             
     def _check_start_turn(self):
             """Überprüft, ob die Bedingung für den Start der Runde gegeben ist"""
@@ -356,60 +371,27 @@ class Cat_Fight:
         
     def check_status_effect(self):
         """Überprüft, ob Status-Effekte vorliegen und führt die entsprechenden Effekte aus"""
-        if self.current_player.status_effect !=None and not self.status_done:
+        # Die Methode wird ausgeführt, wenn der aktuelle Spieler einen Status-Effekt hat und der Status-Effekt in seiner Runde noch nicht
+        # abgehandelt wurde.
+        if self.current_player.status_effects and not self.status_done:
             if not self.show_status:
-                 self.battle_sequencer.status_effects(self.current_player)
-                 if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
-                     self.show_status = True
+                self.status_i = len(self.current_player.status_effects) - 1
+                self.show_status = True
+            if not self.status_i < 0 and not self.battle_sequencer.damage_sequence_active:
+                self.battle_sequencer.status_effect_calculator(self.current_player, self.current_player.status_effects[self.status_i])
+                self.status_i -=1
+                if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
                      self.battle_sequencer.damage_sequence_active = True
                      self.tooltip_box.active = True
-                 else:
-                     self.status_done = True
-            if self.battle_sequencer.damage_sequence_active == False and not self.status_done:
-                self.show_status = False
+            elif self.status_i < 0 and not self.battle_sequencer.damage_sequence_active:
                 self.status_done = True
+                self.show_status = False
                 self.tooltip_box.active = False
-                    
-            
-            
+                self.status_i = None
+                
 
-        
-                    
-                    
 
-    def _check_next_turn(self):
-        """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""
-        # Die Runde endet, wenn der aktive Spieler keine Aktion mehr übrig hat
-        if self.current_player.action == False:
-            self.turn_timer +=1 # Der Rundenzähler wird um eins erhöht
-            # Wenn der Rundenzähler größer ist als die aktuelle Anzahl Kampfteilnehmer, wird der 
-            # Zähler wieder zurückgesetzt und die Kampfreihenfolge beginnt von vorne
-            if self.turn_timer > len(self.fighting_order) -1:
-                self.turn_timer = 0
-                for player in self.fighting_order:
-                    player.action = True
-            self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
-            self.item_box.current_position = 0 # Zurücksetzen der Cursor-Postition für Item-Box Auswahl
-            self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl
-            self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
-            self.target_group = []
-            self.status_done = False
-            self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
-            self.action_box.active = True
-    
-    def _create_or_delete_cursor(self,group): # Als Parameter die Gruppe, deren Charakter(e) anwählbar sein sollen
-        """Erschafft oder Löscht den Angriffscursor"""
-        self.target_group = group
-        # Aufgrund des Dictonary-Eintrags der aktuell ausgewählten Fähigkeit wird ermittelt, ob Cursor für ein Einzelziel oder
-        # für alle Ziele der entsprechenden Gruppe gezeichnet werden sollen:
-        if self.ability_box.active == True and self.current_player.learned_abilities[self.ability_box.current_position]["t_number"] == "all":
-            cursor = self.all_cursor
-        else:
-            cursor = self.single_cursor
-        if cursor.active == True: # Falls bereits ein Auswahlcursor aktiv ist, wird er durch diesen Befehl wieder deaktivert
-            cursor.active = False
-        else:
-            cursor.active = True
+                    
 
     def enemy_turn(self):
         """Führt den Gegnerzug aus"""
@@ -436,21 +418,6 @@ class Cat_Fight:
         self.battle_sequencer.enemy_attack_ready = False
         self.battle_sequencer.action_sequence_active = True
 
-
-
-
-    def _check_if_alive(self):
-        """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
-        if self.battle_sequencer.damage_sequence_active == False: # Der Check findet erst statt, wenn der damage auf dem Bildschirm angezeigt wurde
-            for player in self.fighting_order:
-                if player.current_hp <= 0: # Wenn die aktuelle HP kleiner gleich 0 ist, wird die Lebens-Variable auf False gesetzt
-                    player.is_alive = False
-                    player.status_effect = None
-        # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
-        for enemy in self.enemies:
-            if enemy.is_alive == False:
-                self.enemies.remove(enemy)
-                self.fighting_order.remove(enemy)
     
     def _check_for_action(self):
         """Überprüft ob eine Aktion stattfindet"""
@@ -490,6 +457,39 @@ class Cat_Fight:
                 self.current_action = None
                 self.current_player.action = False
 
+    def _check_if_alive(self):
+        """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
+        if self.battle_sequencer.damage_sequence_active == False: # Der Check findet erst statt, wenn der damage auf dem Bildschirm angezeigt wurde
+            for player in self.fighting_order:
+                if player.current_hp <= 0: # Wenn die aktuelle HP kleiner gleich 0 ist, wird die Lebens-Variable auf False gesetzt
+                    player.is_alive = False
+                    player.status_effect = None
+        # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
+        for enemy in self.enemies:
+            if enemy.is_alive == False:
+                self.enemies.remove(enemy)
+                self.fighting_order.remove(enemy)
+
+    def _check_next_turn(self):
+        """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""
+        # Die Runde endet, wenn der aktive Spieler keine Aktion mehr übrig hat
+        if self.current_player.action == False:
+            self.turn_timer +=1 # Der Rundenzähler wird um eins erhöht
+            # Wenn der Rundenzähler größer ist als die aktuelle Anzahl Kampfteilnehmer, wird der 
+            # Zähler wieder zurückgesetzt und die Kampfreihenfolge beginnt von vorne
+            if self.turn_timer > len(self.fighting_order) -1:
+                self.turn_timer = 0
+                for player in self.fighting_order: # Jeder der Kampfteilnehmer erhält wieder eine Aktion
+                    player.action = True
+            self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
+            self.item_box.current_position = 0 # Zurücksetzen der Cursor-Postition für Item-Box Auswahl
+            self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl
+            self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
+            self.target_group = [] # Die angewählte Gruppe wird wieder zurückgesetzt
+            self.status_done = False # Die Bool-Variable für die Statusabhandlung wird wieder zurückgesetzt
+            self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
+            self.action_box.active = True # Die Aktionsbox wird standardmäßig wieder auf aktiv gesetzt
+
 
 
 
@@ -501,4 +501,23 @@ if __name__ == "__main__":
 
 
 
-
+# Inaktiver Code
+    #def check_status_effect(self):
+        #"""Überprüft, ob Status-Effekte vorliegen und führt die entsprechenden Effekte aus"""
+        # Die Methode wird ausgeführt, wenn der aktuelle Spieler einen Status-Effekt hat und der Status-Effekt in seiner Runde noch nicht
+        # abgehandelt wurde.
+        #if self.current_player.status_effect !=None and not self.status_done: 
+            #if not self.show_status:
+                 #self.battle_sequencer.status_effects(self.current_player) # Führt die Methode zur einmaligen Abhandlung des Statuseffekts aus
+                 # Wenn der Statuseffekt Schaden verursacht, wird damage_sequence und show_status aktiviert, woraufhin der Schaden abgehandelt wird.
+                 # Außerdem wird ein Tooltip eingeblendet, der anzeigt, warum der Spieler Schaden nimmt.
+                 #if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
+                     #self.show_status = True
+                     #self.battle_sequencer.damage_sequence_active = True
+                     #self.tooltip_box.active = True
+                # else: # Wenn der status_effect ohne Schaden auskommt, wird diese Methode sofort beendet
+                     #self.status_done = True
+            #if self.battle_sequencer.damage_sequence_active == False and not self.status_done: # Nach Schadensanzeige wird Methode beendet
+                #self.show_status = False
+                #self.status_done = True
+                #self.tooltip_box.active = False
