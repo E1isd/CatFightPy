@@ -388,6 +388,18 @@ class Cat_Fight:
                 self.show_status = False
                 self.tooltip_box.active = False
                 self.status_i = None
+                if "stun" in self.current_player.status_effects:
+                    self.battle_sequencer.action_sequence_active = False
+                    self.current_player.action = False
+                self.check_status_timer()
+        
+    
+    def check_status_timer(self):
+        """Methode, die die Timer für die Statuseffekte überprüft"""
+        if "burn" in self.current_player.status_effects and self.current_player.burn_timer == 0:
+            self.current_player.status_effects.remove("burn")
+        if "stun" in self.current_player.status_effects and self.current_player.stun_timer == 0:
+            self.current_player.status_effects.remove("stun")
                 
 
 

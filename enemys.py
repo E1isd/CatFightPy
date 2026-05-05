@@ -16,6 +16,8 @@ class Enemy(Sprite):
         self.abilities = Ability()
         self.status_effects = []
 
+        self.stun_timer = 1
+
 
 class Necromancer(Enemy):
     """Klasse für den Hauptboss"""

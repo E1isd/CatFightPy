@@ -17,6 +17,11 @@ class Cat(Sprite):
         self.status_effects = [] # Liste aller im Kampf erhaltenen Statuseffekte
         self.abilities = Ability() # Instanz des Ability-Dictonarys
 
+        # Timer für Statuseffekte
+        self.stun_timer = 0
+        self.burn_timer = 0
+
+
 
 
 class Warrior(Cat):

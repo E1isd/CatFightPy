@@ -124,11 +124,12 @@ class Action():
         if effect == "burn":
             player.got_damage = 30
             self.calculate_damage_or_heal(player,self.damage_group)
+            player.burn_timer -= 1
             self.font_color = "red"
-            self.message = f"{player.name} is burning."
+            self.message = f"{player.name} is burning ({player.burn_timer} more rounds)"
         if effect == "stun":
-            self.action_sequence_active = False
-            player.action = False
+            player.stun_timer -=1
+
 
 
     
@@ -227,6 +228,7 @@ class Action():
         self.calculate_damage_or_heal(target,self.damage_group)
         if "stun" not in target.status_effects:
             target.status_effects.append("stun")
+        target.stun_timer = 1
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
     
     ### Kleriker-Aktionen###
@@ -281,6 +283,7 @@ class Action():
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
         if "burn" not in target.status_effects:
             target.status_effects.append("burn")
+        target.burn_timer = 3
     
     def whirlwind(self, attacker, target_group):
         """Methode für einen Wirbelwind-Zauber gegen alle Gegner"""
