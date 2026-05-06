@@ -62,36 +62,71 @@ class Cleric(Cat):
         self.attack = 70
         self.magic = 150
 
+        self.frame_index = 0
+        
         self.learned_abilities=[self.abilities.prayer_of_lesser_healing,self.abilities.prayer_of_ressurection, self.abilities.prayer_of_healing_wind]
 
-        #Idle Animation, wenn der Charakter ausgewählt ist, aber keine Aktion ausführt
-        self.sprites = []
-        sprite1 = pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha()
-        sprite1 = pygame.transform.scale_by(sprite1, 3)
-        self.sprites.append(sprite1)
-        
-        sprite2 = pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha()
-        sprite2 = pygame.transform.scale_by(sprite2, 3)
-        self.sprites.append(sprite2)
-        
-        self.current_sprite = 0
-        self.image = self.sprites[self.current_sprite]
-        
-        # Timer für die Sprite-Animation (200ms)
-        self.animation_timer = 0
-        self.animation_delay = 200  # 200ms Zeitabstand
+# Standard Sprite, wenn keine Animation aktiv ist
+        self.default_sprite = pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha()
+        self.default_sprite = pygame.transform.scale(self.default_sprite,(150, 150))
 
+        # Animationsframes laden 
+        #Idle-Frames
+        self.idle_frames = self.load_sprite_sheet("images/Cat-Healer/cat-healer-idle-sheet.png",frame_width=48,frame_height=48,frame_count=6,scale=(150, 150))
+        
+        # Die aktuellen Frames der Animation
+        self.current_animation = [self.default_sprite]
+
+        self.was_selected = False
+
+        self.image = self.current_animation[self.frame_index]
+
+        # Timer
+        self.animation_timer = 0
+        self.animation_delay = 200
+
+    # Sprite Sheet laden und in einzelne Frames aufteilen
+    def load_sprite_sheet(self,path,frame_width,frame_height,frame_count,scale=None):
+        sheet = pygame.image.load(path).convert_alpha()
+        frames = []
+
+        for i in range(frame_count):
+            rect = pygame.Rect(i * frame_width,0,frame_width,frame_height)
+
+            frame = sheet.subsurface(rect).copy()
+
+            if scale:
+                frame = pygame.transform.scale(frame, scale)
+            frames.append(frame)
+        return frames
+
+    # Update-Methode mit zeitlich gesteuertem Sprite-Wechsel
     def update(self, is_selected=False):
-        """Update-Methode mit zeitlich gesteuertem Sprite-Wechsel"""
-        if is_selected:
-            # Nur wenn der Charakter ausgewählt ist, wird die Animation abgespielt
-            current_time = pygame.time.get_ticks()
-            if current_time - self.animation_timer >= self.animation_delay:
-                self.animation_timer = current_time
-                self.current_sprite += 1
-                if self.current_sprite >= len(self.sprites): # Wenn das Ende der Sprite-Liste erreicht ist, wieder von vorne beginnen
-                    self.current_sprite = 0
-                self.image = self.sprites[self.current_sprite]
+        current_time = pygame.time.get_ticks()
+        # Auswahlstatus geändert
+        if is_selected != self.was_selected:
+
+            self.frame_index = 0
+            self.animation_timer = current_time
+            
+            if is_selected:
+                self.current_animation = self.idle_frames
+
+            else:
+                self.current_animation = [self.default_sprite]
+
+            self.was_selected = is_selected
+            
+        # Frame wechseln
+        if current_time - self.animation_timer >= self.animation_delay:
+            self.animation_timer = current_time
+            self.frame_index += 1
+
+            # Animation beendet?
+            if self.frame_index >= len(self.current_animation):
+
+                self.frame_index = 0
+            self.image = self.current_animation[self.frame_index]
         
 
 class Mage(Cat):
