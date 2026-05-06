@@ -13,6 +13,7 @@ class Ability:
     # Kriegerfähigkeiten
         self.berserker_claw = {"name":"Berserker Claw","mp_cost":10,"tooltip":"Unleashes fury of claws upon one enemy","target":"enemy","t_number":"single","method":"berserker_claw"}
         self.knock_out = {"name": "Knock Out", "mp_cost":5,"tooltip":"Causes a modeate amount of damage and stuns the enemy for 1 turn.","target":"enemy","t_number":"single","method":"knock_out"}
+        self.hammer_of_justice = {"name": "Hammer Of Justice","mp_cost":15,"tooltip":"Smashes all enemies","target":"enemy","t_number":"all","method":"hammer_of_justice"}
         
 
     # Heilerfähigkeiten
@@ -23,7 +24,7 @@ class Ability:
     # Magierfähigkeiten
         self.fireball = {"name":"Fireball","mp_cost":10,"tooltip":"A small fireball for lesser fire damage upon one enemy","target":"enemy","t_number":"single","method":"fireball"}
         self.whirlwind = {"name":"Whirlwind","mp_cost":20,"tooltip":"A whirlwind bringing damage upon all enemies","target":"enemy","t_number":"all","method":"whirlwind"}
-        self.protect = {"name":"Protect","mp_cost":20,"tooltip":"Raises the armor of all cats","target":"cat","t_number":"all","method":"protect"}
+        self.protect = {"name":"Protect","mp_cost":20,"tooltip":"Increases the armor of all cats","target":"cat","t_number":"all","method":"protect"}
 
     ####### Fähigkeiten der Gegner #####
 

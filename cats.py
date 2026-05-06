@@ -15,6 +15,7 @@ class Cat(Sprite):
         self.got_damage = 0 # Variable für den Schaden, den ein Charakter erlitten hat
         self.got_heal = 0 # Variable für die Heilung, die ein Charakter erhalten hat
         self.status_effects = [] # Liste aller im Kampf erhaltenen Statuseffekte
+        self.immune = [] # Variable für die Immunität von Statuseffekten
         self.abilities = Ability() # Instanz des Ability-Dictonarys
 
         # Timer für Statuseffekte
@@ -38,7 +39,7 @@ class Warrior(Cat):
         self.defence = 150
         self.attack = 200
         self.magic = 50
-        self.learned_abilities=[self.abilities.berserker_claw, self.abilities.knock_out] # Die bisher gelernten Fähigkeiten der Klasse
+        self.learned_abilities=[self.abilities.berserker_claw, self.abilities.knock_out, self.abilities.hammer_of_justice] # Die bisher gelernten Fähigkeiten der Klasse
 
 class Cleric(Cat):
     """Klasse für den Heiler"""

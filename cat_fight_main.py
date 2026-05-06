@@ -82,7 +82,7 @@ class Cat_Fight:
         self.current_action = None # In dieser Variable wird die aktuelle Kampfaktion gespeichert
 
         self.show_status = False # Bool-Variable für das Anzeigen eines Statuseffekt
-        self.status_i = None
+        self.status_i = None # Variable für die Statuseffekte
         self.status_done = False # Bool-Variable, die angibt, dass die Statuseffekt-Anzeige fertig ist
         
 

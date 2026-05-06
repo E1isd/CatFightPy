@@ -15,6 +15,7 @@ class Enemy(Sprite):
         self.is_alive = True
         self.abilities = Ability()
         self.status_effects = []
+        self.immune = [] 
 
         self.stun_timer = 1
 
@@ -32,6 +33,7 @@ class Necromancer(Enemy):
         self.magic = 300
         self.magic_defence = 50
         self.frame_index = 0 # Variable, um den aktuellen Frame der Animation zu verfolgen
+        self.immune = ["stun"]
 
         self.available_skills = [self.abilities.simple_attack]
         

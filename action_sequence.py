@@ -49,8 +49,8 @@ class Action():
         self.message = "" # Variable für Messages (Hauptsächlich für die Statuseffekt-Methode)
 
         # Liste mit den Methoden für alle Abilitys im Spiel:
-        self.all_abilities = [self.berserker_claw, self.knock_out, self.prayer_of_lesser_healing , self.prayer_of_ressurection, self.prayer_of_healing_wind,
-                              self.fireball, self.whirlwind, self.protect ]
+        self.all_abilities = [self.berserker_claw, self.knock_out, self.hammer_of_justice, self.prayer_of_lesser_healing , self.prayer_of_ressurection, 
+                              self.prayer_of_healing_wind, self.fireball, self.whirlwind, self.protect ]
                               
 
         self.enemy_abilities = [self.default_attack,self.poison_claw, self.fury_claws]
@@ -131,6 +131,12 @@ class Action():
             player.stun_timer -=1
         if effect == "protect":
             player.protect_timer -=1
+    
+    def check_for_immune(self,player,status):
+        """Methode um die Immunität zu überprüfen""" # Später noch mit Textmessage ergänzen
+        if status not in player.immune:
+            player.status_effects.append(status)
+
 
 
 
@@ -215,7 +221,12 @@ class Action():
                 target.got_heal = item["value"]
                 self.calculate_damage_or_heal(target,self.healed_group)
                 item["in_stock"] -=1
+        elif item["action"] == "mp_restore":
+            target.current_mp += 30
+            if target.current_mp > target.max_mp:
+                target.current_mp = target.max_mp
         self.action_sequence_active = False
+      
 
 
     ### Krieger-Aktionen###
@@ -226,12 +237,23 @@ class Action():
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
     
     def knock_out(self,attacker,target):
-        target.got_damage = int(50 + (attacker.attack/2) - target.defence)
+        """Methode für den Betäubungsschlag"""
+        target.got_damage = 50 + attacker.attack - target.defence
         self.calculate_damage_or_heal(target,self.damage_group)
         if "stun" not in target.status_effects:
-            target.status_effects.append("stun")
-        target.stun_timer = 1
+            self.check_for_immune(target,"stun")
+        if "stun" in target.status_effects:
+            target.stun_timer = 1
         self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
+    
+    def hammer_of_justice(self,attacker,target_group):
+        """Methode für den Gruppenangriff des Kriegers"""
+        for target in target_group:
+            target.got_damage = int(20 + attacker.attack/2 - target.defence)
+            self.calculate_damage_or_heal(target,self.damage_group)
+        self.action_sequence_active = False
+
+
     
     ### Kleriker-Aktionen###
     def prayer_of_lesser_healing(self,healer,target):
