@@ -1,6 +1,7 @@
 import pygame
 from ability import Ability
 from pygame.sprite import Sprite
+import random
 
 class Cat(Sprite):
     """Überklasse für die Spielercharaktere"""
@@ -118,14 +119,20 @@ class Cleric(Cat):
         if current_time - self.animation_timer >= self.animation_delay:
             self.animation_timer = current_time
             self.frame_index += 1
+        
 
             # Animation beendet?
-            if self.frame_index >= len(self.current_animation):
-
+            
+            if self.frame_index == 3:
+                if not random.randint(1, 5) == 1: # 20% Chance, dass die Animation das umdrehen zeigt, ansonsten zurück zum Anfang
+                    self.frame_index = 0
+            if self.frame_index >= len(self.current_animation): # Wenn das Ende der Animation erreicht ist, zurück zum Anfang
                 self.frame_index = 0
             self.image = self.current_animation[self.frame_index]
-
-
+            #Gleiches Problem wie bei der Necroamncer Katze, wenn die Katze nicht mehr ausgewählt ist, 
+            # dann bleibt sie im letzten Frame der Animation hängen, da die Animation nicht zurückgesetzt wird (siehe Update-Methode der Necromancer-Klasse in enemys.py).
+            #TODO: is_selected == False und frame_index != 0 -> frame_index = 0 und current_animation = default_sprite, damit die Katze zurück zum Standardbild wechselt, wenn sie nicht mehr ausgewählt ist. Muss ich aber nochmal überprüfen, da es sein könnte, das die Animation dann nicht mehr richtig abläuft, wenn die Katze wieder ausgewählt wird. Muss ich also nochmal testen.
+            #Momentanes Prboelm: is_selected bleibt konstant True (Problem außerhalb von enemys.py, wahrscheinlich in cat_fight_main.py)
         
 
 class Mage(Cat):

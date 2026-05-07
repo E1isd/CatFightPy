@@ -35,7 +35,7 @@ class Cursor():
 # 1. Cursor-Animation hat momentan den Fehler, das der Cursor zwischendurch einfach verschwindet, bevor die Animation von vorne beginnt. 
 # Das liegt wahrscheinlich daran, das die Sprite-Koordinaten nicht korrekt sind. Muss ich nochmal überprüfen. 
 # 2. Die Cursor müssen noch etwas skalliert werden, damit sie besser sichtbar sind. Und ein Stück verschoben werden, da sie momentan etwas off sind.
-
+# 3. Das der Cursor verschindet, kann daran liegen, das die cursor sheets unterschiedliche Anzahl von Frames haben. Muss ich auch nochmal überprüfen.
 
 
 

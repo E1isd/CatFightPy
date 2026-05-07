@@ -88,6 +88,14 @@ class Necromancer(Enemy):
     def update(self, is_selected=False):
         current_time = pygame.time.get_ticks()
         # Auswahlstatus geändert
+        
+        #Gleiches Problem wie bei der Healer-Katze, wenn die Katze nicht mehr ausgewählt ist, 
+        # dann bleibt sie im letzten Frame der Animation hängen, da die Animation nicht zurückgesetzt wird.
+        #TODO: is_selected == False und frame_index != 0 -> frame_index = 0 und current_animation = default_sprite, damit die Katze zurück zum Standardbild wechselt, wenn sie nicht mehr ausgewählt ist. Muss ich aber nochmal überprüfen, da es sein könnte, das die Animation dann nicht mehr richtig abläuft, wenn die Katze wieder ausgewählt wird. Muss ich also nochmal testen.
+        #Momentanes Prboelm: is_selected bleibt konstant True (Problem außerhalb von enemys.py, wahrscheinlich in cat_fight_main.py)
+        print("is_selected:", is_selected)
+        print("was_selected:", self.was_selected)
+        
         if is_selected != self.was_selected:
 
             self.frame_index = 0
@@ -98,7 +106,8 @@ class Necromancer(Enemy):
 
             else:
                 self.current_animation = [self.default_sprite]
-
+                
+            self.image = self.current_animation[self.frame_index]
             self.was_selected = is_selected
             
         # Frame wechseln
@@ -110,7 +119,7 @@ class Necromancer(Enemy):
             if self.frame_index >= len(self.current_animation):
 
                 # Startup -> Idle
-                if self.current_animation == self.startup_frames:
+                if self.current_animation is self.startup_frames:
 
                     self.current_animation = self.idle_frames
 
