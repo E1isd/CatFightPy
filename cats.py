@@ -24,8 +24,6 @@ class Cat(Sprite):
         self.protect_timer = 0
 
 
-
-
 class Warrior(Cat):
     """Klasse für den Krieger"""
     def __init__(self,ct_game,start_x,start_y,name):
@@ -67,12 +65,11 @@ class Cleric(Cat):
         self.learned_abilities=[self.abilities.prayer_of_lesser_healing,self.abilities.prayer_of_ressurection, self.abilities.prayer_of_healing_wind]
 
 # Standard Sprite, wenn keine Animation aktiv ist
-        self.default_sprite = pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha()
-        self.default_sprite = pygame.transform.scale(self.default_sprite,(150, 150))
+        self.default_sprite = pygame.transform.scale_by(pygame.image.load("images/Cat-Healer/cat-healer-default.png").convert_alpha(),3)
 
         # Animationsframes laden 
         #Idle-Frames
-        self.idle_frames = self.load_sprite_sheet("images/Cat-Healer/cat-healer-idle-sheet.png",frame_width=48,frame_height=48,frame_count=6,scale=(150, 150))
+        self.idle_frames = self.load_sprite_sheet("images/Cat-Healer/cat-healer-idle-sheet.png",frame_width=48,frame_height=48,frame_count=6,scale=3)
         
         # Die aktuellen Frames der Animation
         self.current_animation = [self.default_sprite]
@@ -83,9 +80,9 @@ class Cleric(Cat):
 
         # Timer
         self.animation_timer = 0
-        self.animation_delay = 200
+        self.animation_delay = 250
 
-    # Sprite Sheet laden und in einzelne Frames aufteilen
+            # Sprite Sheet laden und in einzelne Frames aufteilen
     def load_sprite_sheet(self,path,frame_width,frame_height,frame_count,scale=None):
         sheet = pygame.image.load(path).convert_alpha()
         frames = []
@@ -96,7 +93,7 @@ class Cleric(Cat):
             frame = sheet.subsurface(rect).copy()
 
             if scale:
-                frame = pygame.transform.scale(frame, scale)
+                frame = pygame.transform.scale_by(frame, scale)
             frames.append(frame)
         return frames
 
@@ -127,6 +124,8 @@ class Cleric(Cat):
 
                 self.frame_index = 0
             self.image = self.current_animation[self.frame_index]
+
+
         
 
 class Mage(Cat):

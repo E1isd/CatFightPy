@@ -19,7 +19,7 @@ class Box():
         self.poison_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Poison/poison-symbol16x16.png").convert_alpha(), (24,24))
         self.fire_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Fire/fire-symbol.png").convert_alpha(), (24,24))
         self.stun_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Stun/stun-symbol.png").convert_alpha(), (24,24))
-        self.protect_symbol = pygame.transform.smoothscale(pygame.image.load("images/protect-symbol.png").convert_alpha(), (24,24))
+        self.protect_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Protect/protect-symbol.png").convert_alpha(), (24,24))
 
 
 

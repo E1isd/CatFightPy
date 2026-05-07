@@ -17,7 +17,7 @@ class Effects():
         self.dict_p_of_res = {"image": "images/Effects/p-of-sesurrection-sheet.png","size":35,"scale":7, "frames":20}
 
         # Katzen und Gegner-Animationen
-        self.dict_cleric_pray = {"image":"images/Cat-Healer/cat-healer-pray-sheet.png","size":40,"scale":3, "frames":10,"effect_start":1,"wait": True}
+        self.dict_cleric_pray = {"image":"images/Cat-Healer/cat-healer-pray-sheet.png","size":48,"scale":3, "frames":7,"effect_start":1,"wait": False,"loop":True,"loop-start":5,"loop_frames":2}
 
 
 

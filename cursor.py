@@ -14,8 +14,9 @@ class Cursor():
         self.attack_sheet = pygame.image.load("images/Cursor/attack-sheet.png").convert_alpha() # Angriffscursor
         self.heal_sheet = pygame.image.load("images/Cursor/heal-sheet.png").convert_alpha() # Heilcursor
 
+
         self.cursor_inactive_image = pygame.image.load("images/Cursor/cursor-inactive.png").convert_alpha() # Bild für inaktiven Cursor
-        self.cursor_sprites = [(0,0,16,16),(16,0,16,16),(32,0,16,16),(48,0,16,16), (64,0,16,16), (96,0,16,16), (112,0,16,16), (128,0,16,16), (144,0,16,16), (160,0,16,16)] # Koordinaten für die Teilbereiche der Cursor-Sheets         
+        self.cursor_sprites = [(0,0,16,16),(16,0,16,16),(32,0,16,16),(48,0,16,16), (64,0,16,16), (80,0,16,16), (96,0,16,16), (112,0,16,16), (128,0,16,16), (144,0,16,16)] # Koordinaten für die Teilbereiche der Cursor-Sheets         
         self.current_sprite = 0 # Variable für den aktuellen Sprite des Animations-Sheet
         self.animation_timer = 0 # Timer für die Animation
         self.animation_delay = 275 # Variable für die Zeit bis zum nächsten Animationsframe (in ms)
@@ -34,6 +35,7 @@ class Cursor():
 # 1. Cursor-Animation hat momentan den Fehler, das der Cursor zwischendurch einfach verschwindet, bevor die Animation von vorne beginnt. 
 # Das liegt wahrscheinlich daran, das die Sprite-Koordinaten nicht korrekt sind. Muss ich nochmal überprüfen. 
 # 2. Die Cursor müssen noch etwas skalliert werden, damit sie besser sichtbar sind. Und ein Stück verschoben werden, da sie momentan etwas off sind.
+
 
 
 

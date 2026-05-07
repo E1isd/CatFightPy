@@ -19,7 +19,8 @@ class Enemy(Sprite):
         self.status_effects = []
         self.immune = [] 
 
-        self.stun_timer = 1
+        self.stun_timer = 0
+        self.burn_timer = 0
 
 
 class Necromancer(Enemy):

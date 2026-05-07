@@ -45,6 +45,7 @@ class Action():
         self.cat_delay = 200 # Zeitabstände zwischen den Animationsschritten der Katzen Kampfanimation (200 ms standardmäßig)
         self.cat_frame = 1 # Frame-Variable für Katzen Kampfanimations-Methode
         self.current_cat_dict = {} # Das aktuelle Dictonary, das für die Katzenkampf-Methode verwendet wird
+        self.loop_i = 0
 
         self.message = "" # Variable für Messages (Hauptsächlich für die Statuseffekt-Methode)
 
@@ -183,6 +184,14 @@ class Action():
                             self.i_cat = (self.current_cat_dict["size"] * self.current_cat_dict["scale"]) * (self.current_cat_dict["frames"] -1)
                         else:
                             self.cat_animation_complete = True
+                    elif self.current_cat_dict["loop"] == True:
+                        if not self.effect_animation_complete:
+                            self.i_cat = (self.current_cat_dict["size"] * self.current_cat_dict["scale"]) * (self.current_cat_dict["loop-start"] + self.loop_i)
+                            self.loop_i += 1
+                            if self.loop_i == self.current_cat_dict["loop_frames"]:
+                                self.loop_i = 0
+                        else:
+                            self.cat_animation_complete = True
                     else:
                         self.cat_animation_complete = True
             if self.cat_animation_complete == True:
@@ -288,6 +297,7 @@ class Action():
                 self.calculate_damage_or_heal(target,self.healed_group)
             self.effect_animation_complete = False
             self.cat_animation_complete = False
+            healer.image = healer.default_sprite
             self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
         
     def prayer_of_healing_wind(self,healer,target_group):
@@ -304,10 +314,11 @@ class Action():
         """Methode für Feuerball"""
         target.got_damage = 50 + attacker.magic - target.magic_defence # Ermittelt den Schaden
         self.calculate_damage_or_heal(target,self.damage_group)
-        self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
         if "burn" not in target.status_effects:
-            target.status_effects.append("burn")
-        target.burn_timer = 3
+            self.check_for_immune(target,"burn")
+        if "burn" in target.status_effects:
+            target.burn_timer = 3
+        self.action_sequence_active = False # Die Aktions-Sequenz wird beendet
     
     def whirlwind(self, attacker, target_group):
         """Methode für einen Wirbelwind-Zauber gegen alle Gegner"""

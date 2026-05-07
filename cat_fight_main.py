@@ -31,7 +31,7 @@ class Cat_Fight:
 
         # Heldenkatzen:
         self.warrior_cat = Warrior(self,1100,370,"Warrior")
-        self.healer_cat = Cleric (self,1150,470, "Cleric")
+        self.healer_cat = Cleric (self,1150,450, "Cleric")
         self.casting_cat = Mage(self,1200,620, "Mage")
 
         # Gegner:
