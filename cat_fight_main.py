@@ -48,6 +48,7 @@ class Cat_Fight:
         self.enemies = [self.minion_1,self.minion_2,self.boss] # Gruppe für die Gegner
         self.fighting_order = [self.cat_heroes[0], self.minion_1, self.cat_heroes[1], self.minion_2, self.cat_heroes[2], self.boss]
         self.cat_heroes = [self.warrior_cat,self.healer_cat,self.casting_cat] # Nach dem zufälligen Mischen, wird die Reihenfolge wieder normal gesetzt. Wichtig für die korrekte Cursor Auswahl
+        self.dead_enemies = []
         self.target_group = [] # Die aktuelle angewählte Gruppe, wichtig für die Erschaffung des Auswähl-Cursors und für Fähigkeitssequenzen
 
 
@@ -93,6 +94,7 @@ class Cat_Fight:
             self._check_events() # Überprüft, ob in diesem Frame Tasteneingaben stattfinden
             self._check_start_turn() # Überprüft, ob gerade eine neue Runde gestartet ist
             self.check_status_effect() # Überprüft, ob Statusveränderungen vorliegen und handelt ihre Effekte ab
+            self.check_enemy_turn()
             self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
             self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
             self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
@@ -158,30 +160,30 @@ class Cat_Fight:
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt:
         self.player_cursor.rect.x = self.current_player.rect.centerx - 16
         self.player_cursor.rect.y = self.current_player.rect.y -40
-        self.single_cursor.draw_animated_cursor(self.player_cursor.current_player_sheet,self.player_cursor.rect.x,self.player_cursor.rect.y)
+        self.single_cursor.draw_animated_cursor(self.player_cursor.current_player_sheet,self.player_cursor.rect.x,self.player_cursor.rect.y, self.player_cursor.cursor_sprites_short)
         
         # Der Cursor für das Auswählen eines Ziels wird nur gezeichnet, wenn er auch aktiv ist:
         if self.single_cursor.active == True:
             if self.target_group == self.enemies: # Koordinaten, wenn das Ziel zu den Gegnern gehört
                 self.single_cursor.rect.x = self.enemies[self.current_target].rect.right +10
                 self.single_cursor.rect.y = self.enemies[self.current_target].rect.centery -16
-                self.single_cursor.draw_animated_cursor(self.single_cursor.attack_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y)
+                self.single_cursor.draw_animated_cursor(self.single_cursor.attack_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y, self.single_cursor.cursor_sprites)
             elif self.target_group == self.cat_heroes: # Koordinaten, wenn das Ziel zu den Katzen gehört
                 self.single_cursor.rect.x = self.cat_heroes[self.current_target].rect.left -40
                 self.single_cursor.rect.y = self.cat_heroes[self.current_target].rect.centery -16
-                self.single_cursor.draw_animated_cursor(self.single_cursor.heal_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y)
+                self.single_cursor.draw_animated_cursor(self.single_cursor.heal_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y, self.single_cursor.cursor_sprites)
         # Der Cursor für das Auswählen aller Ziele einer Gruppe
         if self.all_cursor.active == True:
             if self.target_group == self.enemies:
                 for enemy in self.enemies:
                     self.all_cursor.rect.x = enemy.rect.right +10
                     self.all_cursor.rect.y = enemy.rect.centery -10
-                    self.all_cursor.draw_animated_cursor(self.all_cursor.attack_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
+                    self.all_cursor.draw_animated_cursor(self.all_cursor.attack_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y, self.all_cursor.cursor_sprites)
             elif self.target_group == self.cat_heroes:
                 for cat in self.cat_heroes:
                     self.all_cursor.rect.x = cat.rect.left -40
                     self.all_cursor.rect.y = cat.rect.centery -16
-                    self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y)
+                    self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y, self.all_cursor.cursor_sprites)
 
 
     def _draw_effects(self):
@@ -346,6 +348,8 @@ class Cat_Fight:
         else:
             cursor.active = True
 
+
+
             
     def _check_start_turn(self):
             """Überprüft, ob die Bedingung für den Start der Runde gegeben ist"""
@@ -361,11 +365,14 @@ class Cat_Fight:
                     if self.current_player in self.enemies: 
                         self.next_turn = False
                         print(f"{self.current_player.name} ist dran") # !!Temporär!! Print-Befehl wenn ein Gegner dran ist
-                        self.enemy_turn() 
                     # Falls der aktuelle Spieler eine tote Katze ist, wird der Rundentimer eins erhöht (d.h. die Runde wird übersprungen)
                     # und die while-Schleife beginnt von vorne. So wird sichergestellt, dass tote Spieler übersprungen werden:
                     elif self.current_player in self.cat_heroes and self.current_player.is_alive == False:
                         self.turn_timer +=1
+                        if self.turn_timer > len(self.fighting_order) -1:
+                            self.turn_timer = 0
+                            for player in self.fighting_order: # Jeder der Kampfteilnehmer erhält wieder eine Aktion
+                                player.action = True
                     else: # Bei einer lebendingen Katze als aktuellen Spieler wird die Schleife aufgelöst
                         self.next_turn = False
         
@@ -403,43 +410,50 @@ class Cat_Fight:
         if "protect" in self.current_player.status_effects and self.current_player.protect_timer == 0:
             self.current_player.status_effects.remove("protect")
             self.current_player.defence -=20
-
+    
+    def check_enemy_turn(self):
+        if self.current_player in self.enemies:
+            if self.current_player.revive_minions:
+                self.battle_sequencer.revive_minions(self.current_player,self.enemies,self.dead_enemies,self.fighting_order, self.enemy_action)
                 
+            self.enemy_turn()
+    
 
 
-                    
 
     def enemy_turn(self):
         """Führt den Gegnerzug aus"""
-        # Als aktuelle Fähigkeit wird eine Fähigkeit aus der Liste der möglichen Angriffe gewählt:
-        self.enemy_action = choice(self.current_player.available_skills) 
-        # Anhand des Dictonary-Eintrags wird die passende Methode zu der Fähigkeit ermittelt und als aktuelle Aktion festgelegt:
-        for method in self.battle_sequencer.enemy_abilities:
-            if method.__name__ == self.enemy_action["method"]:
-                self.current_action = method
-                break 
-        if self.enemy_action["target"] == "cat": # Wenn das Ziel der Aktion die Katzen sind
-            for cat in self.cat_heroes:
-                if cat.is_alive == True: # Als mögliche Ziele kommen nur lebendige Katzen in Frage
-                    self.target_group.append(cat)
-            if self.enemy_action["t_number"] == "single": # Bei Aktionen gegen ein Einzelziel wird das Ziel zufällig aus der Gruppe ermittelt
-                self.enemy_target = choice(self.target_group)
-        elif self.enemy_action["target"] == "enemy":
-            if self.enemy_action["t_number"] == "all":
-                self.target_group = self.enemies
-            elif self.enemy_action["t_number"] == "single":
-                self.enemy_target = choice(self.enemies)
-        # Timer starten für 3 Sekunden Wartezeit vor dem Angriff
-        self.battle_sequencer.enemy_attack_timer = pygame.time.get_ticks()
-        self.battle_sequencer.enemy_attack_ready = False
-        self.battle_sequencer.action_sequence_active = True
+        if not self.enemy_action:
+            # Als aktuelle Fähigkeit wird eine Fähigkeit aus der Liste der möglichen Angriffe gewählt:
+            self.enemy_action = choice(self.current_player.available_skills) 
+            # Anhand des Dictonary-Eintrags wird die passende Methode zu der Fähigkeit ermittelt und als aktuelle Aktion festgelegt:
+            for method in self.battle_sequencer.enemy_abilities:
+                if method.__name__ == self.enemy_action["method"]:
+                    self.current_action = method
+                    break 
+            if self.enemy_action["target"] == "cat": # Wenn das Ziel der Aktion die Katzen sind
+                for cat in self.cat_heroes:
+                    if cat.is_alive == True: # Als mögliche Ziele kommen nur lebendige Katzen in Frage
+                        self.target_group.append(cat)
+                if self.enemy_action["t_number"] == "single": # Bei Aktionen gegen ein Einzelziel wird das Ziel zufällig aus der Gruppe ermittelt
+                    self.enemy_target = choice(self.target_group)
+            elif self.enemy_action["target"] == "enemy":
+                if self.enemy_action["t_number"] == "all":
+                    self.target_group = self.enemies
+                elif self.enemy_action["t_number"] == "single":
+                    self.enemy_target = choice(self.enemies)
+            # Timer starten für 3 Sekunden Wartezeit vor dem Angriff
+            self.battle_sequencer.enemy_attack_timer = pygame.time.get_ticks()
+            self.battle_sequencer.enemy_attack_ready = False
+            self.battle_sequencer.action_sequence_active = True
+    
 
     
     def _check_for_action(self):
         """Überprüft ob eine Aktion stattfindet"""
         if self.current_action : # Diese Funktion wird erst ausgeführt, wenn eine aktuelle Aktion festgelegt ist
             # Solange die Variable für den action-sequencer wahr ist, wird die festgelegete Aktion ausgeführt
-            if self.battle_sequencer.action_sequence_active == True and self.current_player in self.cat_heroes: 
+            if self.battle_sequencer.action_sequence_active == True and self.current_player in self.cat_heroes:
                 if self.current_action == self.battle_sequencer.use:
                     self.current_action == self.current_action(self.target_group[self.current_target], self.item_box.current_items[self.item_box.current_position])
             # Aufgrund des Dictonary-Eintrags der aktuell ausgewählten Fähigkeit wird ermittelt, die Parameter in der aktuellen Ability-Methode
@@ -448,6 +462,7 @@ class Cat_Fight:
                     self.current_action(self.current_player, self.target_group)
                 else:
                     self.current_action(self.current_player, self.target_group[self.current_target]) 
+                    
             # Wenn die Aktion beendet ist, wird Sequenz für das Anzeigen der Schadenswerte angezeigt
                 if self.battle_sequencer.action_sequence_active == False:
                     if self.battle_sequencer.damage_group or self.battle_sequencer.healed_group:
@@ -472,9 +487,14 @@ class Cat_Fight:
             # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
             # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
+                print(self.current_action)
+                print(self.enemy_action)
+                print(self.current_player)
+                print(self.fighting_order)
                 self.current_action = None
+                self.enemy_action = None
                 self.current_player.action = False
-                print(self.current_player.name)
+            
 
     def _check_if_alive(self):
         """Überprüft, ob ein Kampfteilnehmer gestorben ist"""
@@ -484,10 +504,12 @@ class Cat_Fight:
                     player.is_alive = False
                     player.status_effects.clear()
         # Falls ein Gegner tot ist, wird er sowohl aus der Gruppe der Kampfteilnehmer, als auch aus der Gegnergrupe gelöscht
-        for enemy in self.enemies:
-            if enemy.is_alive == False:
-                self.enemies.remove(enemy)
-                self.fighting_order.remove(enemy)
+            for enemy in self.enemies:
+                if enemy.is_alive == False:
+                    enemy.status_effects.clear()
+                    self.dead_enemies.append(enemy)
+                    self.enemies.remove(enemy)
+                    self.fighting_order.remove(enemy)
 
     def _check_next_turn(self):
         """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""
@@ -503,6 +525,7 @@ class Cat_Fight:
             self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
             self.item_box.current_position = 0 # Zurücksetzen der Cursor-Postition für Item-Box Auswahl
             self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl
+            
             self.current_target = 0 # Zurücksetzen des Angriffscursors (Standartpos.: Erster Gegner der Gruppe)
             self.target_group = [] # Die angewählte Gruppe wird wieder zurückgesetzt
             self.show_status = False
@@ -510,7 +533,8 @@ class Cat_Fight:
             self.status_done = False # Die Bool-Variable für die Statusabhandlung wird wieder zurückgesetzt
             self.next_turn = True # Die Variable für die nächste Runde wird auf True gesetzt
             self.action_box.active = True # Die Aktionsbox wird standardmäßig wieder auf aktiv gesetzt
-
+            self.current_player.was_selected = False
+            self.healer_cat.image = self.healer_cat.default_sprite # !Lässt sich später verallgemeinern, wenn alle Grafiken da sind!
 
 
 

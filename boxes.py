@@ -128,6 +128,7 @@ class Enemy_Box(Box):
                 else:
                     color = "black"
                 self.font_freetype.render_to(self.screen,(hp_line.centerx - hp_line_spacing, self.rect.y +i),f"{str(enemy.current_hp)}",color)
+                
 
                 # Zeichnet ein Statuseffekt-Symbol neben dem Namen wenn nötig
                 x = 20
@@ -144,6 +145,7 @@ class Enemy_Box(Box):
                             x += 30
 
                 i +=50
+                color = "black"
 
 class Action_Box(Box):
     """Klasse für die Menüoberfläche mit den Aktionsmöglichkeiten des Spielers"""
@@ -172,7 +174,7 @@ class Action_Box(Box):
         self.cursor.rect.x = self.postitions[self.current_position].x - 50
         self.cursor.rect.y = self.postitions[self.current_position].y - 6
         if self.active == True:
-            self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y)
+            self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y, self.cursor.cursor_sprites)
         else:
             self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
             self.cursor.current_sprite = 0
@@ -210,7 +212,7 @@ class Item_Box(Box):
             self.cursor.rect.x = self.postitions[self.current_position].x - 50 
             self.cursor.rect.y = self.postitions[self.current_position].y - 5
             if cursor_active == False:
-                self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y)
+                self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y, self.cursor.cursor_sprites)
             else:
                 self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
                 self.cursor.current_sprite = 0
@@ -252,7 +254,7 @@ class Ability_Box(Box):
             self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
             self.cursor.current_sprite = 0
         else:
-            self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y)
+            self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y, self.cursor.cursor_sprites)
             
         
 

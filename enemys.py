@@ -19,8 +19,13 @@ class Enemy(Sprite):
         self.status_effects = []
         self.immune = [] 
 
+
         self.stun_timer = 0
         self.burn_timer = 0
+
+    # Für spezielle Kampfeffekte 
+        self.revive_minions = False
+        self.rage_mode = False
 
 
 class Necromancer(Enemy):
@@ -41,6 +46,13 @@ class Necromancer(Enemy):
         self.immune = ["stun"]
 
         self.available_skills = [self.abilities.simple_attack]
+        self.revive_minions = True
+        self.revive_counter = 3
+
+
+
+
+
         """
         Animation für den Necromancer: 
         Startup-Animation, die abgespielt wird, wenn der Necromancer zum ersten Mal ausgewählt wird. 
@@ -93,8 +105,7 @@ class Necromancer(Enemy):
         # dann bleibt sie im letzten Frame der Animation hängen, da die Animation nicht zurückgesetzt wird.
         #TODO: is_selected == False und frame_index != 0 -> frame_index = 0 und current_animation = default_sprite, damit die Katze zurück zum Standardbild wechselt, wenn sie nicht mehr ausgewählt ist. Muss ich aber nochmal überprüfen, da es sein könnte, das die Animation dann nicht mehr richtig abläuft, wenn die Katze wieder ausgewählt wird. Muss ich also nochmal testen.
         #Momentanes Prboelm: is_selected bleibt konstant True (Problem außerhalb von enemys.py, wahrscheinlich in cat_fight_main.py)
-        print("is_selected:", is_selected)
-        print("was_selected:", self.was_selected)
+
         
         if is_selected != self.was_selected:
 
@@ -136,7 +147,7 @@ class Poison_Minion(Enemy):
         super().__init__(ct_game,start_x,start_y,name)
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.max_hp = 500
-        self.current_hp = 500
+        self.current_hp = 10
         self.mp = 500
         self.defence = 40
         self.attack = 100
@@ -150,7 +161,7 @@ class Rage_Minion(Enemy):
         super().__init__(ct_game,start_x,start_y,name)
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.max_hp = 500
-        self.current_hp = 500
+        self.current_hp = 10
         self.mp = 500
         self.defence = 40
         self.attack = 300

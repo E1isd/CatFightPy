@@ -133,6 +133,11 @@ class Cleric(Cat):
             # dann bleibt sie im letzten Frame der Animation hängen, da die Animation nicht zurückgesetzt wird (siehe Update-Methode der Necromancer-Klasse in enemys.py).
             #TODO: is_selected == False und frame_index != 0 -> frame_index = 0 und current_animation = default_sprite, damit die Katze zurück zum Standardbild wechselt, wenn sie nicht mehr ausgewählt ist. Muss ich aber nochmal überprüfen, da es sein könnte, das die Animation dann nicht mehr richtig abläuft, wenn die Katze wieder ausgewählt wird. Muss ich also nochmal testen.
             #Momentanes Prboelm: is_selected bleibt konstant True (Problem außerhalb von enemys.py, wahrscheinlich in cat_fight_main.py)
+
+            # Ich denke, ich habe das Problem gelöst: Katze bleibt jetzt nicht mehr im letzten Frame hängen, allerdings ist das Problem nur für die 
+            # healer-cat gelöst. Wenn jede Katze und Gegner eine Grafik hat, können wir das algemein als Code formulieren.
+            # Das Problem mit dem Cursor konnte ich auch lösen, wir müssen die Cursor nur noch skalieren.
+
         
 
 class Mage(Cat):

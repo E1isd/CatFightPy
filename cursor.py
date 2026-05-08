@@ -17,19 +17,20 @@ class Cursor():
 
         self.cursor_inactive_image = pygame.image.load("images/Cursor/cursor-inactive.png").convert_alpha() # Bild für inaktiven Cursor
         self.cursor_sprites = [(0,0,16,16),(16,0,16,16),(32,0,16,16),(48,0,16,16), (64,0,16,16), (80,0,16,16), (96,0,16,16), (112,0,16,16), (128,0,16,16), (144,0,16,16)] # Koordinaten für die Teilbereiche der Cursor-Sheets         
+        self.cursor_sprites_short = [(0,0,16,16),(16,0,16,16),(32,0,16,16)]
         self.current_sprite = 0 # Variable für den aktuellen Sprite des Animations-Sheet
         self.animation_timer = 0 # Timer für die Animation
-        self.animation_delay = 275 # Variable für die Zeit bis zum nächsten Animationsframe (in ms)
+        self.animation_delay = 200 # Variable für die Zeit bis zum nächsten Animationsframe (in ms)
 
-    def draw_animated_cursor(self,cursor,x,y):
+    def draw_animated_cursor(self,cursor,x,y,sprite_sheet):
         """Methode, die den animierten Cursor zeichnet"""
-        self.screen.blit(cursor,(x,y),self.cursor_sprites[self.current_sprite])
+        self.screen.blit(cursor,(x,y),sprite_sheet[self.current_sprite])
         current_time = pygame.time.get_ticks()
         if (current_time - self.animation_timer) >= self.animation_delay:
             self.animation_timer = current_time
             self.current_sprite += 1
             # Ist die Animation durchgelaufen, wird sie wiederholt:
-            if self.current_sprite >= len(self.cursor_sprites):
+            if self.current_sprite >= len(sprite_sheet):
                 self.current_sprite = 0
 #TODO: 
 # 1. Cursor-Animation hat momentan den Fehler, das der Cursor zwischendurch einfach verschwindet, bevor die Animation von vorne beginnt. 

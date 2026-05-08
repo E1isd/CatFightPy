@@ -49,6 +49,8 @@ class Action():
 
         self.message = "" # Variable für Messages (Hauptsächlich für die Statuseffekt-Methode)
 
+        self.revive_i = 0
+
         # Liste mit den Methoden für alle Abilitys im Spiel:
         self.all_abilities = [self.berserker_claw, self.knock_out, self.hammer_of_justice, self.prayer_of_lesser_healing , self.prayer_of_ressurection, 
                               self.prayer_of_healing_wind, self.fireball, self.whirlwind, self.protect ]
@@ -137,8 +139,6 @@ class Action():
         """Methode um die Immunität zu überprüfen""" # Später noch mit Textmessage ergänzen
         if status not in player.immune:
             player.status_effects.append(status)
-
-
 
 
     
@@ -335,8 +335,8 @@ class Action():
                 target.defence += 20
             target.protect_timer = 3
             print(supporter)
-
         self.action_sequence_active = False
+
 
 
 
@@ -358,6 +358,26 @@ class Action():
             target.got_damage = int((attacker.attack /2) - target.defence)
             self.calculate_damage_or_heal(target,self.damage_group)
         self.action_sequence_active = False
+    
+    ### Pre-Battle-Effekte ###
+    def revive_minions(self,boss,enemy_group,dead_group,fighting_group, action):
+        if not action:
+            if len(enemy_group) == 1 and boss in enemy_group:
+                self.revive_i +=1
+                if self.revive_i == boss.revive_counter:
+                    x = 0
+                    y = 1
+                    for enemy in dead_group:
+                        enemy.is_alive = True
+                        enemy.current_hp = enemy.max_hp
+                        enemy.action = True
+                        enemy_group.append(enemy)
+                        fighting_group.append(enemy)
+                        x +=1
+                        y +=2
+                    dead_group.clear()
+                    self.revive_i = 0
+
         
     
     
