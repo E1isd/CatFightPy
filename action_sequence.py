@@ -1,6 +1,8 @@
 import pygame
 import pygame.freetype
 from effects import Effects
+import random
+from random import randint
 
 class Action():
     """Klasse, die die Kampfsequenzen und Methoden zu den Abilitys verwaltet, sowie Damage kalkuliert und Animationen abspielt"""
@@ -56,7 +58,7 @@ class Action():
                               self.prayer_of_healing_wind, self.fireball, self.whirlwind, self.protect ]
                               
 
-        self.enemy_abilities = [self.default_attack,self.poison_claw, self.fury_claws]
+        self.enemy_abilities = [self.default_attack,self.poison_claw, self.fury_claws, self.necro_punch, self.hellfire]
 
 
 
@@ -359,6 +361,32 @@ class Action():
             self.calculate_damage_or_heal(target,self.damage_group)
         self.action_sequence_active = False
     
+    def necro_punch(self,attacker,target):
+        """Methode für einen Einzelangriff mit Betäubungschance"""
+        target.got_damage = 66
+        self.calculate_damage_or_heal(target,self.damage_group)
+        if "stun" not in target.status_effects:
+            if random.randint(0,1) == 0:
+                target.status_effects.append("stun")
+        if "stun" in target.status_effects:
+            target.stun_timer = 1
+        self.action_sequence_active = False
+    
+    def hellfire(self,attacker,target):
+        """Methode für einen Feuerangriff mit Chance auf Verbrennen"""
+        target.got_damage = 55
+        self.calculate_damage_or_heal(target,self.damage_group)
+        if "burn" not in target.status_effects:
+            if random.randint(0,2) == 0:
+                target.status_effects.append("burn")
+                target.burn_timer = 3
+        self.action_sequence_active = False
+
+    
+
+
+
+
     ### Pre-Battle-Effekte ###
     def revive_minions(self,boss,enemy_group,dead_group,fighting_group, action):
         if not action:

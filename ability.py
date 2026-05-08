@@ -31,3 +31,5 @@ class Ability:
         self.simple_attack = {"target":"cat","t_number":"single","method":"default_attack"} # Standardangriff
         self.poison_claw = {"target":"cat","t_number":"single","method":"poison_claw"} 
         self.fury_claws = {"target":"cat","t_number":"all","method":"fury_claws"} 
+        self.necro_punch = {"target":"cat","t_number":"single","method":"necro_punch"}
+        self.hellfire = {"target":"cat","t_number":"single","method":"hellfire"}

@@ -38,6 +38,7 @@ class Warrior(Cat):
         self.defence = 150
         self.attack = 200
         self.magic = 50
+        self.magic_defence = 50
         self.learned_abilities=[self.abilities.berserker_claw, self.abilities.knock_out, self.abilities.hammer_of_justice] # Die bisher gelernten Fähigkeiten der Klasse
 
 class Cleric(Cat):
@@ -60,6 +61,7 @@ class Cleric(Cat):
         self.defence = 70
         self.attack = 70
         self.magic = 150
+        self.magic_defence = 50
 
         self.frame_index = 0
         
@@ -153,6 +155,7 @@ class Mage(Cat):
         self.defence = 70
         self.attack = 50
         self.magic = 200
+        self.magic_defence = 50
 
         self.learned_abilities=[self.abilities.fireball, self.abilities.whirlwind, self.abilities.protect]
 

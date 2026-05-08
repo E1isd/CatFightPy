@@ -45,7 +45,7 @@ class Necromancer(Enemy):
         self.frame_index = 0 # Variable, um den aktuellen Frame der Animation zu verfolgen
         self.immune = ["stun"]
 
-        self.available_skills = [self.abilities.simple_attack]
+        self.available_skills = [self.abilities.simple_attack, self.abilities.necro_punch, self.abilities.hellfire]
         self.revive_minions = True
         self.revive_counter = 4
 
