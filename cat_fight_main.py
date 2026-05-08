@@ -362,12 +362,12 @@ class Cat_Fight:
                 while self.next_turn == True: 
                     self.current_player = self.fighting_order[self.turn_timer] # Der nächste Spieler wird anhand der Kampfreihenfolge festgelegt
                     # Wenn der Spieler zur Gegnergruppe gehört, wird die while-Schleife beendet und die Methode für die Gegnerrunde ausgeführt:
-                    if self.current_player in self.enemies: 
-                        self.next_turn = False
-                        print(f"{self.current_player.name} ist dran") # !!Temporär!! Print-Befehl wenn ein Gegner dran ist
+                    #if self.current_player in self.enemies and self.current_player.is_alive == False: 
+                        #self.next_turn = False
+                       #print(f"{self.current_player.name} ist dran") # !!Temporär!! Print-Befehl wenn ein Gegner dran ist
                     # Falls der aktuelle Spieler eine tote Katze ist, wird der Rundentimer eins erhöht (d.h. die Runde wird übersprungen)
                     # und die while-Schleife beginnt von vorne. So wird sichergestellt, dass tote Spieler übersprungen werden:
-                    elif self.current_player in self.cat_heroes and self.current_player.is_alive == False:
+                    if self.current_player.is_alive == False:
                         self.turn_timer +=1
                         if self.turn_timer > len(self.fighting_order) -1:
                             self.turn_timer = 0
@@ -395,10 +395,15 @@ class Cat_Fight:
                 self.show_status = False
                 self.tooltip_box.active = False
                 self.status_i = None
+                if self.current_player.current_hp <=0 :
+                    self.current_player.is_alive = False
+                    self.current_player.status_effects.clear()
+                    self.current_player.action = False
                 if "stun" in self.current_player.status_effects:
                     self.battle_sequencer.action_sequence_active = False
                     self.current_player.action = False
                 self.check_status_timer()
+            
         
     
     def check_status_timer(self):
@@ -487,10 +492,6 @@ class Cat_Fight:
             # Zum Schluss wird der Wert für die aktuelle Aktion zurückgesetzt und der Wert für die Aktionsmöglichkeiten des aktuellen
             # Spielers auf False gesetzt. Dies führt zur Beendigung der Runde:
             if self.battle_sequencer.action_sequence_active == False and self.battle_sequencer.damage_sequence_active == False:
-                print(self.current_action)
-                print(self.enemy_action)
-                print(self.current_player)
-                print(self.fighting_order)
                 self.current_action = None
                 self.enemy_action = None
                 self.current_player.action = False
@@ -509,7 +510,7 @@ class Cat_Fight:
                     enemy.status_effects.clear()
                     self.dead_enemies.append(enemy)
                     self.enemies.remove(enemy)
-                    self.fighting_order.remove(enemy)
+
 
     def _check_next_turn(self):
         """Überprüft, ob die Bedingung für den Abschluss der Runde gegeben ist"""

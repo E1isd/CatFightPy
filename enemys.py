@@ -47,7 +47,7 @@ class Necromancer(Enemy):
 
         self.available_skills = [self.abilities.simple_attack]
         self.revive_minions = True
-        self.revive_counter = 3
+        self.revive_counter = 4
 
 
 

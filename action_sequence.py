@@ -366,15 +366,12 @@ class Action():
                 self.revive_i +=1
                 if self.revive_i == boss.revive_counter:
                     x = 0
-                    y = 1
                     for enemy in dead_group:
                         enemy.is_alive = True
                         enemy.current_hp = enemy.max_hp
                         enemy.action = True
-                        enemy_group.append(enemy)
-                        fighting_group.append(enemy)
+                        enemy_group.insert(x,enemy)
                         x +=1
-                        y +=2
                     dead_group.clear()
                     self.revive_i = 0
 
