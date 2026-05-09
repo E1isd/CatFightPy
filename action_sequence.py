@@ -58,7 +58,7 @@ class Action():
                               self.prayer_of_healing_wind, self.fireball, self.whirlwind, self.protect ]
                               
 
-        self.enemy_abilities = [self.default_attack,self.poison_claw, self.fury_claws, self.necro_punch, self.hellfire]
+        self.enemy_abilities = [self.default_attack,self.poison_claw, self.fury_claws, self.necro_punch, self.hellfire,self.poisonous_storm]
 
 
 
@@ -363,7 +363,7 @@ class Action():
     
     def necro_punch(self,attacker,target):
         """Methode für einen Einzelangriff mit Betäubungschance"""
-        target.got_damage = 66
+        target.got_damage = attacker.attack - target.defence
         self.calculate_damage_or_heal(target,self.damage_group)
         if "stun" not in target.status_effects:
             if random.randint(0,1) == 0:
@@ -374,13 +374,24 @@ class Action():
     
     def hellfire(self,attacker,target):
         """Methode für einen Feuerangriff mit Chance auf Verbrennen"""
-        target.got_damage = 55
+        target.got_damage = attacker.magic - target.magic_defence
         self.calculate_damage_or_heal(target,self.damage_group)
         if "burn" not in target.status_effects:
             if random.randint(0,2) == 0:
                 target.status_effects.append("burn")
                 target.burn_timer = 3
         self.action_sequence_active = False
+    
+    def poisonous_storm(self,attacker,target_group):
+        """Methode für Massenangriff mit Gifteffekt (nur im Rage-Modus verfügbat)"""
+        for target in target_group:
+            target.got_damage = attacker.magic - target.magic_defence
+            self.calculate_damage_or_heal(target,self.damage_group)
+            if "poison" not in target.status_effects:
+                target.status_effects.append("poison")
+        self.action_sequence_active = False
+            
+
 
     
 
@@ -388,7 +399,8 @@ class Action():
 
 
     ### Pre-Battle-Effekte ###
-    def revive_minions(self,boss,enemy_group,dead_group,fighting_group, action):
+    def revive_minions(self,boss,enemy_group,dead_group, action):
+        """Boss-Effekt für Wiederbelebung seiner Untergebenen nach einer bestimmten Anzahl Runden"""
         if not action:
             if len(enemy_group) == 1 and boss in enemy_group:
                 self.revive_i +=1
@@ -402,6 +414,15 @@ class Action():
                         x +=1
                     dead_group.clear()
                     self.revive_i = 0
+    
+    def rage_modus(self,boss):
+        """Boss-Effekt für Rage-Modus, wenn sein Leben niedrig ist"""
+        if boss.current_hp <= boss.max_hp * 0.25:
+            boss.available_skills = boss.rage_skills
+            boss.attack += 5
+            boss.magic += 5
+            boss.name = "Rage Necromancer"
+            boss.rage_modus = False
 
         
     

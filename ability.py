@@ -33,3 +33,4 @@ class Ability:
         self.fury_claws = {"target":"cat","t_number":"all","method":"fury_claws"} 
         self.necro_punch = {"target":"cat","t_number":"single","method":"necro_punch"}
         self.hellfire = {"target":"cat","t_number":"single","method":"hellfire"}
+        self.poisonous_storm = {"target":"cat","t_number":"all","method":"poisonous_storm"}

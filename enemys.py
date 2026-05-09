@@ -25,7 +25,7 @@ class Enemy(Sprite):
 
     # Für spezielle Kampfeffekte 
         self.revive_minions = False
-        self.rage_mode = False
+        self.rage_modus = False
 
 
 class Necromancer(Enemy):
@@ -36,7 +36,7 @@ class Necromancer(Enemy):
         self.rect = pygame.Rect(self.x_position, self.y_position, 200, 200)
 
         self.max_hp = 1500
-        self.current_hp = 1500
+        self.current_hp = 600
         self.mp = 3000
         self.defence = 50
         self.attack = 200
@@ -48,6 +48,9 @@ class Necromancer(Enemy):
         self.available_skills = [self.abilities.simple_attack, self.abilities.necro_punch, self.abilities.hellfire]
         self.revive_minions = True
         self.revive_counter = 4
+
+        self.rage_modus = True
+        self.rage_skills = [self.abilities.necro_punch,self.abilities.hellfire,self.abilities.poisonous_storm]
 
 
 

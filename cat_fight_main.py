@@ -419,8 +419,9 @@ class Cat_Fight:
     def check_enemy_turn(self):
         if self.current_player in self.enemies:
             if self.current_player.revive_minions:
-                self.battle_sequencer.revive_minions(self.current_player,self.enemies,self.dead_enemies,self.fighting_order, self.enemy_action)
-                
+                self.battle_sequencer.revive_minions(self.current_player,self.enemies,self.dead_enemies, self.enemy_action)
+            if self.current_player.rage_modus:
+                self.battle_sequencer.rage_modus(self.current_player)
             self.enemy_turn()
     
 
