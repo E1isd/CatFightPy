@@ -20,6 +20,17 @@ class Cat_Fight:
         except AttributeError:
             pass 
 
+        icon = pygame.image.load("images/Icon/Icon.ico") # Das Icon für das Spiel, wird in der Fensterzeile und im Taskmanager angezeigt
+        pygame.display.set_icon(icon)
+        
+        pygame.mixer.init()
+        Sound_name = pygame.mixer.music.load("audio/background/BackgroundMusic.mp3")
+
+        pygame.mixer.music.play(-1) #Spielt das Lied unendlich lange
+
+        pygame.mixer.music.set_volume(0.5) #10% Lautstärke 
+
+        
         pygame.init()
         self.screen = pygame.display.set_mode((1920,1080),pygame.SCALED | pygame.FULLSCREEN)# Initialisiert den Bildschirm auf dem das Spiel stattfindet (in Vollbild)
         self.screen_rect = self.screen.get_rect()
@@ -117,9 +128,13 @@ class Cat_Fight:
         pygame.draw.rect(self.screen,"blue",self.casting_cat)
         
         if self.minion_1.is_alive == True:
-            pygame.draw.rect(self.screen,"green",self.minion_1)
+            self.screen.blit(self.minion_1.image, (self.minion_1.x_position, self.minion_1.y_position))
         if self.minion_2.is_alive == True:
-            pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
+            minion2_image = getattr(self.minion_2, "image", None)
+            if minion2_image is not None:
+                self.screen.blit(minion2_image, (self.minion_2.x_position, self.minion_2.y_position))
+            else:
+                pygame.draw.rect(self.screen,"purple",self.minion_2.rect)
         if self.boss.is_alive == True:
             self.screen.blit(self.boss.image, (self.boss.x_position,self.boss.y_position))
             # Zeichnet die Katze nur in ihrer Standard/Idle Pose wenn gerade keine Aktion-Animation vorliegt !Muss später noch abgeändert werden,
@@ -188,9 +203,12 @@ class Cat_Fight:
 
     def _draw_effects(self):
         """Zeichnet alle aktiven Effekte (Wenn die entsprechenden Bedingungen gegeben sind)"""
-        # Sprite-Animation für alle Charaktere (Helden und Gegner), die gerade an der Reihe sind
-        if self.current_player and not self.battle_sequencer.cat_animation_active:
-            self.current_player.update(is_selected=True) # Die Funktion für die Sprite-Animation
+        # Sprite-Animation für alle Charaktere (Helden und Gegner)
+        if not self.battle_sequencer.cat_animation_active:
+            for enemy in self.enemies:
+                enemy.update(is_selected=(enemy is self.current_player))
+            for cat in self.cat_heroes:
+                cat.update(is_selected=(cat is self.current_player))
 
         if self.show_status == False:
             self.battle_sequencer.draw_damage_numbers() # Zeichnet die Schadenzahlen an den Kampfteilnehmern nach einem Angriff
@@ -537,7 +555,6 @@ class Cat_Fight:
             self.action_box.active = True # Die Aktionsbox wird standardmäßig wieder auf aktiv gesetzt
             self.current_player.was_selected = False
             self.healer_cat.image = self.healer_cat.default_sprite # !Lässt sich später verallgemeinern, wenn alle Grafiken da sind!
-
 
 
 if __name__ == "__main__":

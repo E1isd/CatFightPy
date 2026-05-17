@@ -83,6 +83,8 @@ class Necromancer(Enemy):
         # Timer
         self.animation_timer = 0
         self.animation_delay = 300
+        self.animation_direction = 1
+        self.deselection_active = False
 
     # Sprite Sheet laden und in einzelne Frames aufteilen
     def load_sprite_sheet(self,path,frame_width,frame_height,frame_count,scale=None):
@@ -111,33 +113,69 @@ class Necromancer(Enemy):
 
         
         if is_selected != self.was_selected:
-
-            self.frame_index = 0
             self.animation_timer = current_time
-            
-            if is_selected:
-                self.current_animation = self.startup_frames
 
+            if is_selected:
+                # Start normal startup -> idle forward sequence
+                self.current_animation = self.startup_frames
+                self.frame_index = 0
+                self.animation_direction = 1
+                self.deselection_active = False
             else:
-                self.current_animation = [self.default_sprite]
-                
+                # Begin deselection reverse sequence if currently in idle/startup
+                if self.current_animation is self.idle_frames or self.current_animation is self.startup_frames:
+                    self.animation_direction = -1
+                    self.deselection_active = True
+                    # reverse starts from current idle frame
+                else:
+                    # Not in an anim state -> just show default
+                    self.current_animation = [self.default_sprite]
+                    self.frame_index = 0
+                    self.animation_direction = 1
+                    self.deselection_active = False
+
+                self.frame_index = min(self.frame_index, len(self.current_animation) - 1)
+
             self.image = self.current_animation[self.frame_index]
             self.was_selected = is_selected
-            
-        # Frame wechseln
+
+        # Frame wechseln (mit fester Verzögerung zwischen Frames)
         if current_time - self.animation_timer >= self.animation_delay:
+            # Timner wird zurückgesetzt, damit die Verzögerung zwischen Frames konstant bleibt
             self.animation_timer = current_time
-            self.frame_index += 1
 
-            # Animation beendet?
-            if self.frame_index >= len(self.current_animation):
+            if self.animation_direction == 1: # Die Richtung der Animation (1 = vorwärts, -1 = rückwärts)
+                # forward
+                self.frame_index += 1 # Nächster Frame der Animation
+                if self.frame_index >= len(self.current_animation):
+                    
+                    # Wenn das Startup zu Ende ist, wechsle zur Idle-Animation
+                    if self.current_animation is self.startup_frames:
+                        self.current_animation = self.idle_frames
+                        self.frame_index = 0
+                        self.animation_timer = current_time
+                    else:
+                        # Wenn die Idle-Animation zu Ende ist, bleibe im letzten Frame der Idle-Animation (statt zurück zum Anfang zu springen)
+                        self.frame_index = len(self.current_animation) - 1
 
-                # Startup -> Idle
-                if self.current_animation is self.startup_frames:
-
-                    self.current_animation = self.idle_frames
-
-                self.frame_index = 0
+            else:
+                # Rückwärts animation (für Deselection) 
+                self.frame_index -= 1
+                if self.frame_index < 0:
+                    # Fertiger Rückwärtslauf der Startup-Animation -> Wechsel zum Default-Sprite
+                    if self.deselection_active and self.current_animation is self.idle_frames:
+                        self.current_animation = self.startup_frames
+                        self.frame_index = len(self.startup_frames) - 1
+                        self.animation_timer = current_time
+                    # Fertiger Rückwärtslauf der Startup-Animation -> Wechsel zum Default-Sprite
+                    elif self.deselection_active and self.current_animation is self.startup_frames:
+                        self.current_animation = [self.default_sprite]
+                        self.frame_index = 0
+                        self.animation_direction = 1
+                        self.deselection_active = False
+                        self.animation_timer = current_time
+                    else:
+                        self.frame_index = 0
 
             self.image = self.current_animation[self.frame_index]
             
@@ -186,6 +224,7 @@ class Poison_Minion(Enemy):
         # Timer
         self.animation_timer = 0
         self.animation_delay = 300
+        self.animation_direction = 1 # 1 = vorwärts, -1 = rückwärts um später eine Rückwärtsanimation zu ermöglichen, wenn der Necromancer nicht mehr ausgewählt ist
 
     # Sprite Sheet laden und in einzelne Frames aufteilen
     def load_sprite_sheet(self,path,frame_width,frame_height,frame_count,scale=None):
@@ -214,9 +253,10 @@ class Poison_Minion(Enemy):
             
             if is_selected:
                 self.current_animation = self.startup_frames
-
+                self.animation_direction = 1
             else:
                 self.current_animation = [self.default_sprite]
+                self.animation_direction = 1
                 
             self.image = self.current_animation[self.frame_index]
             self.was_selected = is_selected
@@ -231,8 +271,8 @@ class Poison_Minion(Enemy):
 
                 # Startup -> Idle
                 if self.current_animation is self.startup_frames:
-
                     self.current_animation = self.idle_frames
+                    self.animation_timer = current_time
 
                 self.frame_index = 0
 
@@ -252,3 +292,15 @@ class Rage_Minion(Enemy):
         self.magic = 100
         self.magic_defence = 50
         self.available_skills = [self.abilities.simple_attack, self.abilities.fury_claws]
+
+
+#TODO: Animationen für die Minions hinzufügen, ähnlich wie beim Necromancer. Einfaches Idle- und Startup-Animationen sollten ausreichen, da die Minions keine eigenen Fähigkeiten haben, die eine spezielle Animation erfordern würden. Erledigt :)
+        self.default_sprite = pygame.Surface((100, 100), pygame.SRCALPHA) # Transparenter Sprite als Platzhalter
+        self.default_sprite.fill((160, 0, 160, 180))
+        self.current_animation = [self.default_sprite]
+        self.frame_index = 0
+        self.image = self.current_animation[self.frame_index]
+        self.animation_timer = 0
+        self.animation_delay = 300
+        self.animation_direction = 1
+        self.was_selected = False
