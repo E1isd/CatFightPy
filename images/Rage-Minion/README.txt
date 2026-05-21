@@ -1,1 +1,0 @@
-Ich bin momentan noch dran den Rage Minion zu zeichnen, dennoch wollte ich schon mal die Datei zeigen in welche "Richtung" ich dachte der Rage Minion gehen sollte. :)

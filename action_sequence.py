@@ -49,6 +49,13 @@ class Action():
         self.current_cat_dict = {} # Das aktuelle Dictonary, das für die Katzenkampf-Methode verwendet wird
         self.loop_i = 0
 
+        # Lade den Hurt-Sound, der bei allen Angriffen abgespielt wird, bei denen Schaden entsteht.
+        self.hurt_sound = None
+        try:
+            self.hurt_sound = pygame.mixer.Sound("audio/sound_effects/hurt_sound.mp3")
+        except Exception:
+            self.hurt_sound = None
+
         self.message = "" # Variable für Messages (Hauptsächlich für die Statuseffekt-Methode)
 
         self.revive_i = 0
@@ -72,6 +79,23 @@ class Action():
             target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
             if target.current_hp < 0: # Sind aktuelle HP kleiner als 0, werden sie auf 0 gesetzt (damit keine negativen Zahlen angezeigt werden)
                 target.current_hp = 0
+            # Spielt den Hurt-Sound und zeigt das Hurt-Image, wenn Schaden > 0 ist
+            if target.got_damage > 0:
+                if self.hurt_sound is not None:
+                    try:
+                        self.hurt_sound.play()
+                    except Exception:
+                        pass
+                # Lade das Hurt-Image lazy, falls es noch nicht geladen ist, und setze den Timer.
+                try:
+                    if getattr(target, "hurt_image", None) is None and hasattr(target, "load_hurt_image"):
+                        hurt_size = getattr(target, "hurt_target_size", None)
+                        target.load_hurt_image(target_size=hurt_size)
+                    target.hurt_timer = pygame.time.get_ticks()
+                    if getattr(target, "hurt_image", None) is not None:
+                        target.image = target.hurt_image
+                except Exception:
+                    pass
             self.damage_group.add(target) # Das Ziel, welches Schaden genommen hat, wird zur Schadensgruppe zugefügt
         if group == self.healed_group:
             if target.is_alive: # Heilung nur, wenn das Ziel auch am Leben ist

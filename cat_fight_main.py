@@ -1,8 +1,14 @@
-import pygame
+import os
 import ctypes
 import sys
 import random
 from random import choice
+
+# Entferne eine erzwungene Dummy-Audio-Treiber-Einstellung, falls sie von außen gesetzt wurde.
+if os.getenv("SDL_AUDIODRIVER", "").lower() == "dummy":
+    del os.environ["SDL_AUDIODRIVER"]
+    
+import pygame
 from cats import *
 from enemys import *
 from boxes import *
@@ -20,19 +26,30 @@ class Cat_Fight:
         except AttributeError:
             pass 
 
+        pygame.mixer.pre_init(44100, -16, 2, 512) # Pre-Init des Mixers mit niedrigeren Buffer-Werten, um die Latenz zu reduzieren (wichtig für die Synchronisation von Sound und Animationen)
+        pygame.init() # Initialisiert alle Pygame-Module, damit sie im Spiel verwendet werden können
+
         icon = pygame.image.load("images/Icon/Icon.ico") # Das Icon für das Spiel, wird in der Fensterzeile und im Taskmanager angezeigt
         pygame.display.set_icon(icon)
         
-        pygame.mixer.init()
-        Sound_name = pygame.mixer.music.load("audio/background/BackgroundMusic.mp3")
+        try:
+            if pygame.mixer.get_init() is None:
+                pygame.mixer.init() # Initialisiert den Mixer, damit Audio im Spiel verwendet werden kann.
+            music_path = os.path.join("audio", "background", "BackgroundMusic.mp3")
+            if not os.path.isfile(music_path):
+                raise FileNotFoundError(f"Musikdatei nicht gefunden: {music_path}")
+            pygame.mixer.music.load(music_path)
+            pygame.mixer.music.play(-1) #Spielt das Lied unendlich lange
+            pygame.mixer.music.set_volume(0.5) #50% Lautstärke 
+        except Exception as e: # Falls Audio nicht geladen werden kann, wird eine Warnung ausgegeben und das Spiel ohne Sound gestartet.
+            print("Warnung: Audio konnte nicht gestartet werden. Spiel wird ohne Sound gestartet.")
+            print("Audio-Fehler:", e)
 
-        pygame.mixer.music.play(-1) #Spielt das Lied unendlich lange
-
-        pygame.mixer.music.set_volume(0.5) #10% Lautstärke 
-
-        
-        pygame.init()
-        self.screen = pygame.display.set_mode((1920,1080),pygame.SCALED | pygame.FULLSCREEN)# Initialisiert den Bildschirm auf dem das Spiel stattfindet (in Vollbild)
+        try:
+            self.screen = pygame.display.set_mode((1920,1080), pygame.FULLSCREEN) # Erst wird versucht, das Spiel im Fullscreen-Modus zu starten, damit es auf verschiedenen Bildschirmgrößen gut aussieht. Falls das nicht möglich ist wird es im normalen Fenstermodus gestartet.
+        except pygame.error:
+            print("Warnung: Fullscreen nicht verfügbar. Starte stattdessen im normalen Fenstermodus.")
+            self.screen = pygame.display.set_mode((1920,1080))
         self.screen_rect = self.screen.get_rect()
         self.bg_color = (200, 205, 220) # Variable für Hintergrundfarbe des Blockes in RGB-Werten
         self.background = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(),(1920,1080))
@@ -43,12 +60,12 @@ class Cat_Fight:
         # Heldenkatzen:
         self.warrior_cat = Warrior(self,1100,370,"Warrior")
         self.healer_cat = Cleric (self,1150,450, "Cleric")
-        self.casting_cat = Mage(self,1200,620, "Mage")
+        self.casting_cat = Mage(self,1200,570, "Mage")
 
         # Gegner:
         self.boss = Necromancer(self,350,350,"Evil Necromancer Cat")
         self.minion_1 = Poison_Minion(self,650,370, "Cat-Minion 1")
-        self.minion_2 = Rage_Minion (self,650,620, "Cat-Minion 2")
+        self.minion_2 = Rage_Minion (self,650,570, "Cat-Minion 2")
 
         self.current_inventory = Inventory(self) # Klasse für das aktuelle Inventar
 
@@ -124,8 +141,10 @@ class Cat_Fight:
     
     def _draw_charakters(self):
         """Zeichnet die Spielfiguren"""
-        pygame.draw.rect(self.screen,"red",self.warrior_cat)
-        pygame.draw.rect(self.screen,"blue",self.casting_cat)
+        if self.warrior_cat.is_alive:
+            self.screen.blit(self.warrior_cat.image, (self.warrior_cat.x_position, self.warrior_cat.y_position))
+        if self.casting_cat.is_alive:
+            self.screen.blit(self.casting_cat.image, (self.casting_cat.x_position, self.casting_cat.y_position))
         
         if self.minion_1.is_alive == True:
             self.screen.blit(self.minion_1.image, (self.minion_1.x_position, self.minion_1.y_position))
@@ -173,32 +192,32 @@ class Cat_Fight:
     def _draw_cursor(self):
         """Zeichnet die Cursor und Marker auf das Spielfeld"""
         # Zeichnet den Marker für die aktuelle Spielfigur, dafür werden die Koordinaten des Cursors beim aktuellen Kampfteilnehmer gesetzt:
-        self.player_cursor.rect.x = self.current_player.rect.centerx - 16
-        self.player_cursor.rect.y = self.current_player.rect.y -40
-        self.single_cursor.draw_animated_cursor(self.player_cursor.current_player_sheet,self.player_cursor.rect.x,self.player_cursor.rect.y, self.player_cursor.cursor_sprites_short)
+        self.player_cursor.rect.x = self.current_player.rect.centerx - (self.player_cursor.cursor_frame_width // 2 - 20) # Die x-Koordinate des Cursors wird so gesetzt, dass er zentriert über der aktuellen Spielfigur liegt
+        self.player_cursor.rect.y = self.current_player.rect.y - self.player_cursor.cursor_frame_height - 8 # Die y-Koordinate des Cursors wird so gesetzt, dass er über der aktuellen Spielfigur liegt, mit einem Abstand von 8 Pixeln
+        self.player_cursor.draw_animated_cursor(self.player_cursor.current_player_sheet,self.player_cursor.rect.x,self.player_cursor.rect.y, self.player_cursor.cursor_sprites_short)
         
         # Der Cursor für das Auswählen eines Ziels wird nur gezeichnet, wenn er auch aktiv ist:
         if self.single_cursor.active == True:
             if self.target_group == self.enemies: # Koordinaten, wenn das Ziel zu den Gegnern gehört
-                self.single_cursor.rect.x = self.enemies[self.current_target].rect.right +10
-                self.single_cursor.rect.y = self.enemies[self.current_target].rect.centery -16
-                self.single_cursor.draw_animated_cursor(self.single_cursor.attack_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y, self.single_cursor.cursor_sprites)
+                self.single_cursor.rect.x = self.enemies[self.current_target].rect.right + 30
+                self.single_cursor.rect.y = self.enemies[self.current_target].rect.centery - (self.single_cursor.cursor_frame_height // 2 )
+                self.single_cursor.draw_animated_cursor(self.single_cursor.attack_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y, self.single_cursor.attack_sprites)
             elif self.target_group == self.cat_heroes: # Koordinaten, wenn das Ziel zu den Katzen gehört
-                self.single_cursor.rect.x = self.cat_heroes[self.current_target].rect.left -40
-                self.single_cursor.rect.y = self.cat_heroes[self.current_target].rect.centery -16
-                self.single_cursor.draw_animated_cursor(self.single_cursor.heal_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y, self.single_cursor.cursor_sprites)
+                self.single_cursor.rect.x = self.cat_heroes[self.current_target].rect.left - self.single_cursor.cursor_frame_width - 4
+                self.single_cursor.rect.y = self.cat_heroes[self.current_target].rect.centery - (self.single_cursor.cursor_frame_height // 2)
+                self.single_cursor.draw_animated_cursor(self.single_cursor.heal_sheet,self.single_cursor.rect.x,self.single_cursor.rect.y, self.single_cursor.heal_sprites)
         # Der Cursor für das Auswählen aller Ziele einer Gruppe
         if self.all_cursor.active == True:
             if self.target_group == self.enemies:
                 for enemy in self.enemies:
-                    self.all_cursor.rect.x = enemy.rect.right +10
-                    self.all_cursor.rect.y = enemy.rect.centery -10
-                    self.all_cursor.draw_animated_cursor(self.all_cursor.attack_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y, self.all_cursor.cursor_sprites)
+                    self.all_cursor.rect.x = enemy.rect.right + 4
+                    self.all_cursor.rect.y = enemy.rect.centery - (self.all_cursor.cursor_frame_height // 2 - 50)
+                    self.all_cursor.draw_animated_cursor(self.all_cursor.attack_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y, self.all_cursor.attack_sprites)
             elif self.target_group == self.cat_heroes:
                 for cat in self.cat_heroes:
-                    self.all_cursor.rect.x = cat.rect.left -40
-                    self.all_cursor.rect.y = cat.rect.centery -16
-                    self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y, self.all_cursor.cursor_sprites)
+                    self.all_cursor.rect.x = cat.rect.left - self.all_cursor.cursor_frame_width - 4
+                    self.all_cursor.rect.y = cat.rect.centery - (self.all_cursor.cursor_frame_height // 2)
+                    self.all_cursor.draw_animated_cursor(self.all_cursor.heal_sheet,self.all_cursor.rect.x,self.all_cursor.rect.y, self.all_cursor.heal_sprites)
 
 
     def _draw_effects(self):
