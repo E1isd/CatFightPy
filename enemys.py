@@ -67,6 +67,9 @@ class Enemy(Sprite):
         # Für spezielle Kampfeffekte (Initialwerte)
         self.revive_minions = False
         self.rage_modus = False
+        self.minion_protection = False
+        self.damage_negation = False
+        
 
     def load_hurt_image(self, target_size=None):
         """Lazy-load das Hurt-Image beim ersten Schaden."""
@@ -101,6 +104,10 @@ class Necromancer(Enemy):
 
         self.rage_modus = True
         self.rage_skills = [self.abilities.necro_punch,self.abilities.hellfire,self.abilities.poisonous_storm]
+
+        self.minion_protection = True
+        self.damage_negation = True
+        
 
 
 
@@ -246,7 +253,7 @@ class Poison_Minion(Enemy):
         super().__init__(ct_game,start_x,start_y,name)
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.max_hp = 500
-        self.current_hp = 500
+        self.current_hp = 10
         self.mp = 500
         self.defence = 40
         self.attack = 100
@@ -352,7 +359,7 @@ class Rage_Minion(Enemy):
         super().__init__(ct_game,start_x,start_y,name)
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.max_hp = 500
-        self.current_hp = 500
+        self.current_hp = 10
         self.mp = 500
         self.defence = 40
         self.attack = 300

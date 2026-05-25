@@ -561,6 +561,11 @@ class Cat_Fight:
                 self.turn_timer = 0
                 for player in self.fighting_order: # Jeder der Kampfteilnehmer erhält wieder eine Aktion
                     player.action = True
+            for enemy in self.enemies:
+                if enemy.minion_protection == True:
+                    self.battle_sequencer.minion_protection(enemy,self.enemies)
+
+
             self.action_box.current_position = 0 # Zurücksetzen der Cursor-Position für die Action-Box (Standartpos.: Attack)
             self.item_box.current_position = 0 # Zurücksetzen der Cursor-Postition für Item-Box Auswahl
             self.ability_box.current_position = 0 # Zurücksetzen der Cursor-Postition für die Ability-Box Auswahl

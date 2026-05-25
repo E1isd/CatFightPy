@@ -57,6 +57,7 @@ class Cat(Sprite):
         self.status_effects = [] # Liste aller im Kampf erhaltenen Statuseffekte
         self.immune = [] # Variable für die Immunität von Statuseffekten
         self.abilities = Ability() # Instanz des Ability-Dictonarys
+        self.damage_negation = False
 
         # Timer für Statuseffekte
         self.stun_timer = 0

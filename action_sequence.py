@@ -76,6 +76,8 @@ class Action():
         if group == self.damage_group:
             if target.got_damage < 0: # Wenn der Schaden kleiner als 0 ist, wird er auf 0 zurückgesetzt
                 target.got_damage = 0
+            elif target.damage_negation == True:
+                target.got_damage = 0
             target.current_hp -= target.got_damage # Der Schaden wird von den aktuellen Lebenspunkten abgezogen
             if target.current_hp < 0: # Sind aktuelle HP kleiner als 0, werden sie auf 0 gesetzt (damit keine negativen Zahlen angezeigt werden)
                 target.current_hp = 0
@@ -443,6 +445,12 @@ class Action():
             boss.magic += 5
             boss.name = "Rage Necromancer"
             boss.rage_modus = False
+    
+    def minion_protection(self,boss,group):
+        if boss in group and len(group) == 1:
+            boss.damage_negation = False
+        else:
+            boss.damage_negation = True
 
         
     
