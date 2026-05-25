@@ -306,7 +306,7 @@ class Action():
             # Lädt das Animation-Sheet für die Effekte:
             self.effect_image = pygame.transform.scale_by(pygame.image.load(self.current_effect_dict["image"]).convert_alpha(),self.current_effect_dict["scale"])
             self.effect_x = target.rect.x -50 # x Position für den Effekt
-            self.effect_y = target.rect.y -110 # y Position für den Effekt
+            self.effect_y = target.rect.y -95 # y Position für den Effekt
             self.current_cat_dict = self.effects.dict_cleric_pray # legt das aktuelle Dictonary für die Katzen Kampfanimation fest
             # Lädt das Animation-Sheet für die Katze:
             healer.image = pygame.transform.scale_by(pygame.image.load(self.current_cat_dict["image"]).convert_alpha(),self.current_cat_dict["scale"])
@@ -417,12 +417,8 @@ class Action():
             
 
 
-    
 
-
-
-
-    ### Pre-Battle-Effekte ###
+    ### Spezielle Battle-Effekte ###
     def revive_minions(self,boss,enemy_group,dead_group, action):
         """Boss-Effekt für Wiederbelebung seiner Untergebenen nach einer bestimmten Anzahl Runden"""
         if not action:

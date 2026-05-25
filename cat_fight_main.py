@@ -58,9 +58,9 @@ class Cat_Fight:
         self.clock = pygame.time.Clock() #Clock misst die Zeit und ist für die Framerate wichtig
 
         # Heldenkatzen:
-        self.warrior_cat = Warrior(self,1100,370,"Warrior")
-        self.healer_cat = Cleric (self,1150,450, "Cleric")
-        self.casting_cat = Mage(self,1200,570, "Mage")
+        self.warrior_cat = Warrior(self,1100,350,"Warrior")
+        self.healer_cat = Cleric (self,1150,460, "Cleric")
+        self.casting_cat = Mage(self,1200,590, "Mage")
 
         # Gegner:
         self.boss = Necromancer(self,350,350,"Evil Necromancer Cat")
