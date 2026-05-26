@@ -52,7 +52,7 @@ class Cat_Fight:
             self.screen = pygame.display.set_mode((1920,1080))
         self.screen_rect = self.screen.get_rect()
         self.bg_color = (200, 205, 220) # Variable für Hintergrundfarbe des Blockes in RGB-Werten
-        self.background = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(),(1920,1080))
+        self.background = pygame.transform.scale(pygame.image.load("images/background_start.png").convert_alpha(),(1920,1080))
         pygame.display.set_caption("Katzen RPG")# Text für die Fensterzeile
 
         self.clock = pygame.time.Clock() #Clock misst die Zeit und ist für die Framerate wichtig
@@ -88,6 +88,7 @@ class Cat_Fight:
         self.ability_box = Ability_Box(self,self.action_box) # Box, die die verfügbaren Abilitys anzeigt
         self.tooltip_box = Tooltip_Box(self) # Box, die Abilitys und Gegnerangriffe beschreibt 
         self.help_box = Help_Box(self,self.cat_box.rect) # Box, die Hilfe für die Steuerung anzeigt
+        self.start_box = Start_Box(self)
 
         self.tooltip_message = "" # Die Variable für den angezeigten Text der Tooltip-Box
 
@@ -113,30 +114,42 @@ class Cat_Fight:
         self.show_status = False # Bool-Variable für das Anzeigen eines Statuseffekt
         self.status_i = None # Variable für die Statuseffekte
         self.status_done = False # Bool-Variable, die angibt, dass die Statuseffekt-Anzeige fertig ist
+
+        self.fight_active = False
         
 
 
     def run_game(self): # Hauptfunktion (Ereignisse checken, Bildschirm/Sprites aktualisieren)
         """Die Hauptfunktion: Sie läuft so lange, bis die while-Schleife beendet ist"""
         while True:
-            self._check_events() # Überprüft, ob in diesem Frame Tasteneingaben stattfinden
-            self._check_start_turn() # Überprüft, ob gerade eine neue Runde gestartet ist
-            self.check_status_effect() # Überprüft, ob Statusveränderungen vorliegen und handelt ihre Effekte ab
-            self.check_enemy_turn()
-            self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
-            self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
-            self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
-            self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
-            self.clock.tick(60) # Aktualisiert die Uhr und legt so die Framerate fest
+            if self.fight_active == False:
+                self._check_events()
+                self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
+                self.clock.tick(60) # Aktualisiert die Uhr und legt so die Framerate fest
+            elif self.fight_active == True:
+                self._check_events() # Überprüft, ob in diesem Frame Tasteneingaben stattfinden
+                self._check_start_turn() # Überprüft, ob gerade eine neue Runde gestartet ist
+                self.check_status_effect() # Überprüft, ob Statusveränderungen vorliegen und handelt ihre Effekte ab
+                self.check_enemy_turn()
+                self._check_for_action() # Überprüft, ob eine Aktion ausgeführt wird
+                self._check_if_alive() # Überprüft, ob alle Kampfteilnehmer noch am Leben sind
+                self._check_next_turn() # Überprüft, ob die Bedingungen für eine neue Runde gegeben sind
+                self._update_screen() # Aktualisiert den Bildschirm mit allen aktualisierten Werten, Positionen etc.
+                self.clock.tick(60) # Aktualisiert die Uhr und legt so die Framerate fest
  
     def _update_screen(self):
         """Zeichnet der Bildschirm mit allen Spielelementen neu"""
-        self.screen.blit(self.background, (0,0))
-        self._draw_game_fields() # Zeichnet die Schaltflächen 
-        self._draw_charakters() # Zeichnet die Spielfiguren
-        self._draw_cursor() # Zeichnet die Cursor
-        self._draw_effects() # Zeichnet alle aktiven Effekte
-        pygame.display.flip() # Zeichnet den Bildschirm neu
+        if self.fight_active == False:
+            self.screen.blit(self.background, (0,0))
+            self.start_box.draw_start_box()
+            pygame.display.flip() 
+        elif self.fight_active == True:
+            self.screen.blit(self.background, (0,0))
+            self._draw_game_fields() # Zeichnet die Schaltflächen 
+            self._draw_charakters() # Zeichnet die Spielfiguren
+            self._draw_cursor() # Zeichnet die Cursor
+            self._draw_effects() # Zeichnet alle aktiven Effekte
+            pygame.display.flip() # Zeichnet den Bildschirm neu
         
     
     def _draw_charakters(self):
@@ -253,14 +266,14 @@ class Cat_Fight:
         if event.key == pygame.K_q: # Event für Beenden des Spieles (Taste Q)
             sys.exit()
         if event.key == pygame.K_SPACE: # !TEMPORÄR um die Runden schnell zu skippen!!!
-            if not self.current_action and not self.show_status:
+            if not self.current_action and not self.show_status and self.fight_active:
                 self.current_player.action = False
                 if self.single_cursor.active == True or self.all_cursor.active:
                     self._create_or_delete_cursor(None)
                 self.ability_box.active = False
                 self.item_box.active = False
         # Alle der folgenden Tasteneingaben sind nur möglich, wenn gerade keine Aktionssequenz abgespielt wird!
-        if event.key == pygame.K_DOWN and not self.current_action and not self.show_status: # Bewegung des Cursors nach unten
+        if event.key == pygame.K_DOWN and not self.current_action and not self.show_status and self.fight_active: # Bewegung des Cursors nach unten
             if  self.action_box.active == True: # In der Action-Box
                 if self.action_box.current_position < len(self.action_box.postitions)-1:
                     self.action_box.current_position +=1
@@ -276,7 +289,7 @@ class Cat_Fight:
                 self.current_target +=1
                 if self.current_target > len(self.target_group) -1:
                     self.current_target = 0
-        if event.key == pygame.K_UP and not self.current_action and not self.show_status: # Bewegung des Cursors nach oben
+        if event.key == pygame.K_UP and not self.current_action and not self.show_status and self.fight_active: # Bewegung des Cursors nach oben
             if self.action_box.active == True: # In der Action-Box
                 if self.action_box.current_position > 0:
                     self.action_box.current_position -=1
@@ -293,7 +306,7 @@ class Cat_Fight:
                 if self.current_target < 0:
                     self.current_target = len(self.target_group) -1
         if event.key == pygame.K_RETURN and not self.current_action and not self.show_status: # Die Taste mit der Aktionen ausgeführt werden 
-                if self.current_player in self.cat_heroes and self.action_box.active == True:
+                if self.current_player in self.cat_heroes and self.action_box.active == True and self.fight_active:
                     if self.action_box.current_position == 0: # Aktiviert den Cursor für die Stadtardattacke
                         self._create_or_delete_cursor(self.enemies)
                         self.action_box.active = False
@@ -305,9 +318,9 @@ class Cat_Fight:
                         self.ability_box.active = True
                         self.tooltip_box.active = True
                         self.action_box.active = False
-                elif self.item_box.active == True and not self.single_cursor.active: # Wenn die Item-Box aktiv ist, wird der Cursor aktiviert
+                elif self.item_box.active == True and not self.single_cursor.active and self.fight_active: # Wenn die Item-Box aktiv ist, wird der Cursor aktiviert
                     self._create_or_delete_cursor(self.cat_heroes) # Der Cursor hat als Ziel die Katzen (gibt momentan nur Heilitems)
-                elif self.ability_box.active == True and not self.single_cursor.active and not self.all_cursor.active:
+                elif self.ability_box.active == True and not self.single_cursor.active and not self.all_cursor.active and self.fight_active:
                     # Die aktuell ausgewählte Fähigkeit kann nur ausgewählt werden, wenn die Katze die erforderlichen MP hat:
                     if self.current_player.current_mp >= self.current_player.learned_abilities[self.ability_box.current_position]["mp_cost"]:
                         # Aus dem Dictonary wird gelesen, ob die Fähigkeit Gegner angreift oder Katzen heilt. Entsprechend werden die Cursor
@@ -318,7 +331,7 @@ class Cat_Fight:
                             self._create_or_delete_cursor(self.cat_heroes)
                     else:
                         print("Play Error Sound!") # Platzhalter für späteren Soundeffekt
-                elif (self.single_cursor.active == True or self.all_cursor.active == True) and self.current_action == None: # Aktionen, wenn der Cursor aktiv ist
+                elif (self.single_cursor.active == True or self.all_cursor.active == True) and self.current_action == None and self.fight_active: # Aktionen, wenn der Cursor aktiv ist
                     if self.action_box.current_position == 0: # Wenn der Action-Box Cursor auf "Attack" steht...
                         self.current_action = self.battle_sequencer.default_attack # ... wird die Standard-Attacke als aktuelle Aktion festgelegt
                         # Der Attack-cursor wird wieder deaktiviert, dabei bleibt die aktuell ausgewählte Gruppe als target_group 
@@ -345,8 +358,11 @@ class Cat_Fight:
                         self.battle_sequencer.action_sequence_active = True 
                         self.ability_box.active = False
                         self.tooltip_box.active = False
+                elif self.fight_active == False:
+                    self.fight_active = True
+                    self.background = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(),(1920,1080))
 
-        if event.key == pygame.K_ESCAPE and not self.current_action and not self.show_status: # Abbruch von Aktionen und Auswahlpunkten
+        if event.key == pygame.K_ESCAPE and not self.current_action and not self.show_status and self.fight_active: # Abbruch von Aktionen und Auswahlpunkten
             if self.single_cursor.active == True or self.all_cursor.active == True: # Bricht die aktuelle Cursor-Auswahl ab
                 self._create_or_delete_cursor(None)
                 if self.action_box.current_position == 0:

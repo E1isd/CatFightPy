@@ -23,6 +23,29 @@ class Box():
 
 
 
+class Start_Box(Box):
+    """Klasse für die Start Box Oberfläche"""
+    def __init__(self,cf_game):
+        super().__init__(cf_game)
+        self.rect = pygame.Rect(self.screen_rect.centerx -500,250,1000,600)
+        self.small_rect = pygame.Rect(self.screen_rect.centerx -300,self.rect.bottom + 20,600,100)
+        self.font_freetype_headline = pygame.freetype.SysFont(None,120)
+
+    def draw_start_box(self):
+        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
+        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        pygame.draw.rect(self.screen,self.box_color,self.small_rect,border_radius=10)
+        pygame.draw.rect(self.screen,self.border_color,self.small_rect, width=3, border_radius=10)
+
+        headline_width = self.font_freetype_headline.get_rect("Cat Fight").width
+        small_text_length = self.font_freetype.get_rect("Press Return To Start").width
+        small_text_height = self.font_freetype.get_rect("Press Return To Start").height
+
+        self.font_freetype_headline.render_to(self.screen,(self.screen_rect.centerx -headline_width/2,100),"Cat Fight","black",None) 
+
+        self.font_freetype.render_to(self.screen,(self.small_rect.centerx - small_text_length/2 , self.small_rect.centery - small_text_height/2),"Press Return To Start","black",None)
+
+
 class Cat_Box(Box):
     """Klasse für die Oberfläche mit den Lebens- und Manaleisten der Katze"""
     def __init__(self,cf_game,cat1,cat2,cat3): # Nimmt als Parameter die drei Katzen
