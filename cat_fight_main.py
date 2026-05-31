@@ -138,6 +138,7 @@ class Cat_Fight:
         self.tooltip_box = Tooltip_Box(self)                                                    # Describes abilities and enemy attacks.
         self.help_box    = Help_Box(self, self.cat_box.rect)                                    # Control help overlay.
         self.start_box   = Start_Box(self)
+        self.end_box     = End_Box(self)
 
         self.tooltip_message = ""  # Text currently shown in the tooltip box.
 
@@ -176,6 +177,8 @@ class Cat_Fight:
         self.status_done  = False  # True once all status effects for this turn have been processed.
 
         self.fight_active = False
+        self.fight_won = False
+        self.game_over = False
 
 
     # ==========================================================================
@@ -196,6 +199,7 @@ class Cat_Fight:
                 self.check_enemy_turn()
                 self._check_for_action()    # Check whether an action is being executed.
                 self._check_if_alive()      # Check whether all combatants are still alive.
+                self.check_for_fight_end()
                 self._check_next_turn()     # Check whether conditions for a new turn are met.
                 self._update_screen()
                 self.clock.tick(60)
@@ -206,9 +210,15 @@ class Cat_Fight:
 
     def _update_screen(self):
         """Redraws the screen with all game elements."""
-        if self.fight_active == False:
+        if self.fight_active == False and not self.game_over and not self.fight_won:
             self.screen.blit(self.background, (0, 0))
             self.start_box.draw_start_box()
+            pygame.display.flip()
+        elif self.fight_active == False and (self.game_over or self.fight_won):
+            self.screen.blit(self.background, (0, 0))
+            self.end_box.draw_end_box(self.game_over)
+            self._draw_game_fields()  # Draw the UI panels.
+            self._draw_charakters()   # Draw the characters.
             pygame.display.flip()
         elif self.fight_active == True:
             self.screen.blit(self.background, (0, 0))
@@ -537,12 +547,17 @@ class Cat_Fight:
                     self.ability_box.active = False
                     self.tooltip_box.active = False
 
-            elif not self.fight_active:
+            elif not self.fight_active and not self.fight_won and not self.game_over:
                 # Start the fight when ENTER is pressed on the start screen.
                 self.fight_active = True
                 self.background = pygame.transform.scale(
                     pygame.image.load("images/background.png").convert_alpha(), (1920, 1080)
                 )
+
+            elif not self.fight_active and self.fight_won or self.game_over:
+                sys.exit()
+            
+
 
         # ESCAPE — cancel current action or selection.
         if event.key == pygame.K_ESCAPE and not self.current_action and not self.show_status and self.fight_active:
@@ -805,7 +820,7 @@ class Cat_Fight:
         Resets all UI selections and increments (or wraps) the turn timer.
         At the end of a full round, every combatant's action is restored.
         """
-        if not self.current_player.action:
+        if not self.current_player.action and self.fight_active:
             self.turn_timer += 1
 
             # Wrap the turn timer and restore actions for a new round.
@@ -837,7 +852,18 @@ class Cat_Fight:
 
             # Reset the healer cat's sprite to its default idle pose.
             # (Can be generalized once all character graphics are in place.)
-            self.healer_cat.image = self.healer_cat.default_sprite
+            self.healer_cat.image = self.healer_cat.default_sprite#
+
+    def check_for_fight_end(self):
+        if not self.enemies:
+            self.fight_won = True
+            self.fight_active = False
+        elif all(cat.is_alive == False for cat in self.cat_heroes):
+            self.game_over = True
+            self.fight_active = False
+            
+
+
 
 
 # ==============================================================================

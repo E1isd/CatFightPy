@@ -28,19 +28,75 @@ class Start_Box(Box):
         self.rect = pygame.Rect(self.screen_rect.centerx -500,250,1000,600)
         self.small_rect = pygame.Rect(self.screen_rect.centerx -300,self.rect.bottom + 20,600,100)
         self.font_freetype_headline = pygame.freetype.SysFont(None,120)
+        self.font_freetype_intro = pygame.freetype.SysFont(None,30)
 
     def draw_start_box(self):
         pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
         pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+
+        intro_text = "Einst lebten alle Bewohner des Katzenreiches friedlich zusammen, bis plötzlich der finstere Nekromantenkönig mit seiner " \
+        "untoten Armee das Reich in Angst und Schrecken versetzte. [Absatz] Drei tapfere Helden-Katzen stellten sich der Bedrohung und kämpften sich bis zum Schloss " \
+        "des dunklen Herrschers vor. In einem letzten entscheidenden Kampf wollen sie die Welt aus seinen Krallen befreien. [Absatz] Das Schicksal aller " \
+        "Katzen liegt nun in ihren Pfoten..."
+
+        words = intro_text.split(" ")
+        lines = []
+        current_line = ""
+
+        for word in words:
+            if word == "[Absatz]":
+                lines.append(current_line)
+                current_line = ""
+            else:
+                text_line = current_line + word + " "
+                line_width = self.font_freetype_intro.get_rect(text_line).width
+                if line_width < (self.rect.width -50):
+                    current_line = text_line
+                else:
+                    lines.append(current_line)
+                    current_line = word + " "
+        lines.append(current_line)
+
+        y = 50
+        for line in lines:
+            self.font_freetype_intro.render_to(self.screen,(self.rect.x +50,self.rect.y+y),line)
+            y +=50
+
         pygame.draw.rect(self.screen,self.box_color,self.small_rect,border_radius=10)
         pygame.draw.rect(self.screen,self.border_color,self.small_rect, width=3, border_radius=10)
 
         headline_width = self.font_freetype_headline.get_rect("Cat Fight").width
-        small_text_length = self.font_freetype.get_rect("Press Return To Start").width
-        small_text_height = self.font_freetype.get_rect("Press Return To Start").height
+        small_text_length = self.font_freetype.get_rect("Press Return To Start!").width
+        small_text_height = self.font_freetype.get_rect("Press Return To Start!").height
 
         self.font_freetype_headline.render_to(self.screen,(self.screen_rect.centerx -headline_width/2,100),"Cat Fight","black",None)
         self.font_freetype.render_to(self.screen,(self.small_rect.centerx - small_text_length/2 , self.small_rect.centery - small_text_height/2),"Press Enter To Start!","black",None)
+
+
+class End_Box(Box):
+    """Klasse für die End Game Oberfläche"""
+    def __init__(self,cf_game):
+        super().__init__(cf_game)
+        self.rect = pygame.Rect(self.screen_rect.centerx -200,250,400,100)
+        self.font_freetype_headline = pygame.freetype.SysFont(None,120)
+    
+    def draw_end_box(self,game_over):
+        if game_over == True:
+            headline_width = self.font_freetype_headline.get_rect("Game Over").width
+            small_text_length = self.font_freetype.get_rect("Press Enter").width
+            small_text_height = self.font_freetype.get_rect("Press Enter").height
+            self.font_freetype_headline.render_to(self.screen,(self.screen_rect.centerx -headline_width/2,100),"Game Over","red",None)
+            self.font_freetype.render_to(self.screen,(self.rect.centerx - small_text_length/2 , self.rect.centery - small_text_height/2),"Press Enter","black",None)
+        else:
+            headline_width = self.font_freetype_headline.get_rect("You Won!").width
+            self.font_freetype_headline.render_to(self.screen,(self.screen_rect.centerx -headline_width/2,100),"You Won!","white",None)
+
+        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
+        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        small_text_length = self.font_freetype.get_rect("Press Enter").width
+        small_text_height = self.font_freetype.get_rect("Press Enter").height
+
+        self.font_freetype.render_to(self.screen,(self.rect.centerx - small_text_length/2 , self.rect.centery - small_text_height/2),"Press Enter","black",None)
 
 
 class Cat_Box(Box):

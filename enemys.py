@@ -253,7 +253,7 @@ class Poison_Minion(Enemy):
         super().__init__(ct_game,start_x,start_y,name)
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.max_hp = 500
-        self.current_hp = 10
+        self.current_hp = 500
         self.mp = 500
         self.defence = 40
         self.attack = 100
@@ -359,7 +359,7 @@ class Rage_Minion(Enemy):
         super().__init__(ct_game,start_x,start_y,name)
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.max_hp = 500
-        self.current_hp = 10
+        self.current_hp = 500
         self.mp = 500
         self.defence = 40
         self.attack = 300
