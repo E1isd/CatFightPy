@@ -301,6 +301,7 @@ class Ability_Box(Box):
             text_spacing = self.font_freetype.get_rect(f"{ability['mp_cost']} ").width
             self.font_freetype.render_to(self.screen,(mp_line.centerx - (text_spacing/2), self.rect.y +i),f"{ability['mp_cost']}",color)
             i += 50
+            color = "black"
         self.cursor.rect.x = self.postitions[self.current_position].x - 50
         self.cursor.rect.y = self.postitions[self.current_position].y - 5
         if cursor_active1 == True or cursor_active2 == True:

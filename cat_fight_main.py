@@ -833,6 +833,7 @@ class Cat_Fight:
             for enemy in self.enemies:
                 if enemy.minion_protection:
                     self.battle_sequencer.minion_protection(enemy, self.enemies)
+                    
 
             # Reset all UI cursor positions to their defaults.
             self.action_box.current_position  = 0  # Default: Attack

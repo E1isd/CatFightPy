@@ -89,8 +89,8 @@ class Warrior(Cat):
         self.rect = pygame.Rect(self.x_position, self.y_position, 100,100)
         self.current_hp = 800
         self.max_hp = 800
-        self.current_mp = 25
-        self.max_mp = 25
+        self.current_mp = 40
+        self.max_mp = 40
         self.defence = 150
         self.attack = 200
         self.magic = 50
