@@ -867,6 +867,7 @@ class Cat_Fight:
             for enemy in self.enemies:
                 if enemy.minion_protection:
                     self.battle_sequencer.minion_protection(enemy, self.enemies)
+                    
 
             # Setzt alle UI-Cursor-Positionen auf ihre Standardwerte zurück.
             self.action_box.current_position  = 0  # Standard: Angriff

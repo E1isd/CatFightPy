@@ -326,8 +326,9 @@ class Ability_Box(Box):
             text_spacing = self.font_freetype.get_rect(f"{ability['mp_cost']} ").width
             self.font_freetype.render_to(self.screen,(mp_line.centerx - (text_spacing/2), self.rect.y +i),f"{ability['mp_cost']}",color)
             i += 50
-        self.cursor.rect.x = self.postitions[self.current_position].x -35
-        self.cursor.rect.y = self.postitions[self.current_position].y
+            color = "black"
+        self.cursor.rect.x = self.postitions[self.current_position].x - 50
+        self.cursor.rect.y = self.postitions[self.current_position].y - 5
         if cursor_active1 == True or cursor_active2 == True:
             self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
             self.cursor.current_sprite = 0
