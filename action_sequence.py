@@ -16,7 +16,8 @@ class Action():
         self.enemy_attack_timer = 0 # Timer für Gegner-Angriffe
         self.enemy_attack_ready = False # Flag, ob der Gegner-Angriff bereit ist
 
-        self.font_freetype = pygame.freetype.SysFont(None,30) # Variable für die Schrift
+        self.font_freetype = pygame.freetype.Font("fonts/Cinzel.ttf", 30) # Variable für die Schrift
+        self.damage_font = pygame.freetype.Font("fonts/Designer.ttf", 30) # Font für Schadenstext
         self.font_color = None # Variable für die Schriftfarbe
 
         self.damage_group = pygame.sprite.Group() # Gruppe für alle Kampfteilnehmer, die Schaden erlitten haben
@@ -50,11 +51,13 @@ class Action():
         self.loop_i = 0
 
         # Lade den Hurt-Sound, der bei allen Angriffen abgespielt wird, bei denen Schaden entsteht.
-        self.hurt_sound = None
+        self.punch_sounds = []
         try:
-            self.hurt_sound = pygame.mixer.Sound("audio/sound_effects/hurt_sound.mp3")
+            for i in range(1, 4):
+                sound = pygame.mixer.Sound(f"audio/sound_effects/punches/punch{i}.mp3")
+                self.punch_sounds.append(sound)
         except Exception:
-            self.hurt_sound = None
+            self.punch_sounds = []
 
         self.message = "" # Variable für Messages (Hauptsächlich für die Statuseffekt-Methode)
 
@@ -83,9 +86,9 @@ class Action():
                 target.current_hp = 0
             # Spielt den Hurt-Sound und zeigt das Hurt-Image, wenn Schaden > 0 ist
             if target.got_damage > 0:
-                if self.hurt_sound is not None:
+                if self.punch_sounds:
                     try:
-                        self.hurt_sound.play()
+                        random.choice(self.punch_sounds).play()
                     except Exception:
                         pass
                 # Lade das Hurt-Image lazy, falls es noch nicht geladen ist, und setze den Timer.
@@ -111,11 +114,11 @@ class Action():
         if self.damage_sequence_active == True: 
                 for player in self.damage_group:
                     # Ermittelt Höhe und Länge des Schriftzuges, um es möglichst zentral zu zeichnen
-                    string_lenght = self.font_freetype.get_rect(f"{player.got_damage} ").width
-                    string_height = self.font_freetype.get_rect(f"{player.got_damage} ").height 
+                    string_lenght = self.damage_font.get_rect(f"{player.got_damage} ").width
+                    string_height = self.damage_font.get_rect(f"{player.got_damage} ").height 
                     # Zeichnet den aktuellen Schadenwert möglichst zentral auf das Ziel
-                    self.font_freetype.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2)),\
-                                                 f"{player.got_damage}",font_color, size=30+self.x_pos) 
+                    self.damage_font.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2)),\
+                                                 f"{player.got_damage}","white", size=30+self.x_pos) 
                 for player in self.healed_group:
                     # Ermittelt Höhe und Länge des Schriftzuges, um es möglichst zentral zu zeichnen
                     string_lenght = self.font_freetype.get_rect(f"{player.got_heal} ").width
@@ -464,19 +467,19 @@ class Action():
     def inactive(self):
             if self.frame == 0:
                 for player in self.damage_group:
-                    string_lenght = self.font_freetype.get_rect(f"{player.got_damage} ").width
-                    string_height = self.font_freetype.get_rect(f"{player.got_damage} ").height
+                    string_lenght = self.damage_font.get_rect(f"{player.got_damage} ").width
+                    string_height = self.damage_font.get_rect(f"{player.got_damage} ").height
                     if player.rect.centery - (string_height / 2) + self.x_pos >= player.rect.bottom:
                         self.frame +=1
                         break
                     else:
-                        self.font_freetype.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2) + self.x_pos),f"{player.got_damage}",None)
+                        self.damage_font.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.centery - (string_height / 2) + self.x_pos),f"{player.got_damage}","white")
                         self.x_pos +=1
             elif self.frame > 0:
                 for player in self.damage_group:
-                    string_lenght = self.font_freetype.get_rect(f"{player.got_damage} ").width
-                    string_height = self.font_freetype.get_rect(f"{player.got_damage} ").height
-                    self.font_freetype.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.bottom - (string_height)),f"{player.got_damage}",None)
+                    string_lenght = self.damage_font.get_rect(f"{player.got_damage} ").width
+                    string_height = self.damage_font.get_rect(f"{player.got_damage} ").height
+                    self.damage_font.render_to(self.screen,(player.rect.centerx - (string_lenght / 2),player.rect.bottom - (string_height)),f"{player.got_damage}","white")
                     self.frame += 1
             
             if self.frame == 60:

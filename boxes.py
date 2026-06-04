@@ -7,70 +7,101 @@ from inventory import Inventory
 class Box():
     """Die Hauptklasse für die Kampfbilschirmoberflächen"""
     def __init__(self,cf_game):
+        self.cf_game = cf_game
         self.screen = cf_game.screen
         self.screen_rect = self.screen.get_rect()
-        self.font_freetype = pygame.freetype.SysFont(None,30)
+        self.font_freetype = pygame.freetype.Font("fonts/Cinzel.ttf", 30)
         self.cursor = Cursor(self,0,0)
-        self.box_color = (255,182,193)
-        self.border_color = (139,10,80)
+        self.box_color = (191,134,111)
+        self.border_color = (52,32,43)
 
         # Symbole für Statusveränderungen
-        self.poison_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Poison/poison-symbol.png").convert_alpha(), (25,25))
-        self.fire_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Fire/fire1-symbol.png").convert_alpha(), (25,25))
-        self.stun_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Stun/stun-symbol.png").convert_alpha(), (25,25))
-        self.protect_symbol = pygame.transform.smoothscale(pygame.image.load("images/Symbols/Protect/protect-symbol.png").convert_alpha(), (25,25))
+        self.poison_symbol = pygame.transform.scale(pygame.image.load("images/Symbols/Poison/poison-symbol.png").convert_alpha(), (25,25)) # "smoothscale" macht Pixeart blurry, "scale" macht es Scharf
+        self.fire_symbol = pygame.transform.scale(pygame.image.load("images/Symbols/Fire/fire1-symbol.png").convert_alpha(), (25,25))
+        self.stun_symbol = pygame.transform.scale(pygame.image.load("images/Symbols/Stun/stun-symbol.png").convert_alpha(), (25,25))
+        self.protect_symbol = pygame.transform.scale(pygame.image.load("images/Symbols/Protect/protect-symbol.png").convert_alpha(), (25,25))
+
+    def draw_box(self, rect):
+        """Zeichnet eine Box mit Hintergrund und Rahmen"""
+        # Zeichne die Border zuerst, damit sie über dem Hintergrund liegt
+        pygame.draw.rect(self.screen, self.border_color, rect, width=3, border_radius=10)
+        
+        # Farbe der Box innerhalb der Border zeichnen (auf allen Seiten um die Rahmenbreite versetzt)
+        border_width = 3
+        inner_rect = pygame.Rect(rect.x + border_width,rect.y + border_width,rect.width - 2 * border_width,rect.height - 2 * border_width)
+        pygame.draw.rect(self.screen, self.box_color, inner_rect, border_radius=10)
 
 
 class Start_Box(Box):
     """Klasse für die Start Box Oberfläche"""
-    def __init__(self,cf_game):
+    def __init__(self, cf_game):
         super().__init__(cf_game)
-        self.rect = pygame.Rect(self.screen_rect.centerx -500,250,1000,600)
-        self.small_rect = pygame.Rect(self.screen_rect.centerx -300,self.rect.bottom + 20,600,100)
-        self.font_freetype_headline = pygame.freetype.SysFont(None,120)
-        self.font_freetype_intro = pygame.freetype.SysFont(None,30)
+
+        w = 1920
+        h = 1080
+
+        # ------------------------------------------------------------------
+        # Der wird Prolog einmal mit 50 % Deckkraft vorgerendert, damit wir
+        # in der Zeichnungsschleife keine Oberflächen erstellen müssen.
+        # Der Trick: Das RGBA-Bild auf eine RGB-Oberfläche kopieren, die
+        # mit dem eigentlichen start_background gefüllt ist, sodass Krümel/Pfoten
+        # durch die transparenten Bereiche hindurchscheinen. 
+        # set_alpha() funktioniert bei reinem RGB einwandfrei.
+        # ------------------------------------------------------------------
+        background = pygame.transform.scale(
+            pygame.image.load("images/Start/start_background.png").convert_alpha(), (w, h)
+        )
+
+        raw_prologue = pygame.image.load("images/Start/prolouge.png").convert_alpha()
+        prologue_scaled = pygame.transform.scale(raw_prologue, (w, h))
+        self.prologue_surf = pygame.Surface((w, h))
+        self.prologue_surf.blit(background, (0, 0))          # background fills transparent areas
+        self.prologue_surf.blit(prologue_scaled, (0, 0))
+        self.prologue_surf.set_alpha(128)                    # 50% — baked, never changed
+
+        # Logo surface: same idea — background behind transparent areas.
+        raw_logo = pygame.image.load("images/Start/start_logo.png").convert_alpha()
+        logo_scaled = pygame.transform.scale(raw_logo, (w, h))
+        self.logo_surf = pygame.Surface((w, h))
+        self.logo_surf.blit(background, (0, 0))
+        self.logo_surf.blit(logo_scaled, (0, 0))
+
+        self.img_rect = self.screen_rect.copy()
+
+        # Logo fade-in: alpha 0 -> 255 at 2 units/frame @ 60fps (~2s)
+        self._logo_alpha = 0
+        self._FADE_SPEED = 2
+
+        # Start screen phases:
+        # 0 = logo only, 1 = prologue visible
+        self.start_phase = 0
 
     def draw_start_box(self):
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        if self.start_phase == 0:
+            # ------------------------------------------------------------------
+            # 1. Logo fades in. set_alpha() works cleanly on the RGB surface.
+            # ------------------------------------------------------------------
+            if self._logo_alpha < 255:
+                self._logo_alpha = min(255, self._logo_alpha + self._FADE_SPEED)
 
-        intro_text = "Einst lebten alle Bewohner des Katzenreiches friedlich zusammen, bis plötzlich der finstere Nekromantenkönig mit seiner " \
-        "untoten Armee das Reich in Angst und Schrecken versetzte. [Absatz] Drei tapfere Helden-Katzen stellten sich der Bedrohung und kämpften sich bis zum Schloss " \
-        "des dunklen Herrschers vor. In einem letzten entscheidenden Kampf wollen sie die Welt aus seinen Krallen befreien. [Absatz] Das Schicksal aller " \
-        "Katzen liegt nun in ihren Pfoten..."
+            self.logo_surf.set_alpha(self._logo_alpha)
+            self.screen.blit(self.logo_surf, self.img_rect)
+            prompt = "Press Enter To Start!"
+        else:
+            # ------------------------------------------------------------------
+            # 2. Prologue at 50% opacity — pre-baked, just blit it.
+            # ------------------------------------------------------------------
+            self.screen.blit(self.prologue_surf, self.img_rect)
+            prompt = "Press Enter To Continue!"
 
-        words = intro_text.split(" ")
-        lines = []
-        current_line = ""
-
-        for word in words:
-            if word == "[Absatz]":
-                lines.append(current_line)
-                current_line = ""
-            else:
-                text_line = current_line + word + " "
-                line_width = self.font_freetype_intro.get_rect(text_line).width
-                if line_width < (self.rect.width -50):
-                    current_line = text_line
-                else:
-                    lines.append(current_line)
-                    current_line = word + " "
-        lines.append(current_line)
-
-        y = 50
-        for line in lines:
-            self.font_freetype_intro.render_to(self.screen,(self.rect.x +50,self.rect.y+y),line)
-            y +=50
-
-        pygame.draw.rect(self.screen,self.box_color,self.small_rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.small_rect, width=3, border_radius=10)
-
-        headline_width = self.font_freetype_headline.get_rect("Cat Fight").width
-        small_text_length = self.font_freetype.get_rect("Press Return To Start!").width
-        small_text_height = self.font_freetype.get_rect("Press Return To Start!").height
-
-        self.font_freetype_headline.render_to(self.screen,(self.screen_rect.centerx -headline_width/2,100),"Cat Fight","black",None)
-        self.font_freetype.render_to(self.screen,(self.small_rect.centerx - small_text_length/2 , self.small_rect.centery - small_text_height/2),"Press Enter To Start!","black",None)
+            # ------------------------------------------------------------------
+            # 3. Prompt text — plain text, no box.
+            # ------------------------------------------------------------------
+        prompt_w = self.font_freetype.get_rect(prompt).width
+        prompt_h = self.font_freetype.get_rect(prompt).height
+        x = self.screen_rect.centerx - prompt_w // 2
+        y = self.screen_rect.bottom  - 60
+        self.font_freetype.render_to(self.screen, (x, y), prompt, "black")
 
 
 class End_Box(Box):
@@ -78,7 +109,7 @@ class End_Box(Box):
     def __init__(self,cf_game):
         super().__init__(cf_game)
         self.rect = pygame.Rect(self.screen_rect.centerx -200,250,400,100)
-        self.font_freetype_headline = pygame.freetype.SysFont(None,120)
+        self.font_freetype_headline = pygame.freetype.Font("fonts/Cinzel.ttf", 120)
     
     def draw_end_box(self,game_over):
         if game_over == True:
@@ -91,8 +122,7 @@ class End_Box(Box):
             headline_width = self.font_freetype_headline.get_rect("You Won!").width
             self.font_freetype_headline.render_to(self.screen,(self.screen_rect.centerx -headline_width/2,100),"You Won!","white",None)
 
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        self.draw_box(self.rect)
         small_text_length = self.font_freetype.get_rect("Press Enter").width
         small_text_height = self.font_freetype.get_rect("Press Enter").height
 
@@ -111,8 +141,7 @@ class Cat_Box(Box):
         """Zeichnet die Oberfläche der Box und schreibt den Text hinein"""
         i = 100
         color = "black"
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        self.draw_box(self.rect)
 
         hp_line = self.font_freetype.render_to(self.screen,(self.rect.x +150, self.rect.y + 50),"HP",color,None,pygame.freetype.STYLE_UNDERLINE)
         mp_line = self.font_freetype.render_to(self.screen,(self.rect.x +350, self.rect.y + 50),"MP",color,None,pygame.freetype.STYLE_UNDERLINE)
@@ -176,8 +205,7 @@ class Enemy_Box(Box):
         """Schreibt die Gegnernamen und HP"""
         i = 100
         color = "black"
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        self.draw_box(self.rect)
         for enemy in self.enemies:
             if enemy.is_alive == True:
                 name_box = self.font_freetype.render_to(self.screen,(self.rect.x +50, self.rect.y +i),f"{enemy.name}","Black")
@@ -223,14 +251,13 @@ class Action_Box(Box):
 
     def draw_action_box(self, cat):
         """Zeichnet die Action Box"""
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        self.draw_box(self.rect)
         self.font_freetype.render_to(self.screen,self.pos1,cat.actions[0],"Black")
         self.font_freetype.render_to(self.screen,self.pos2,cat.actions[1],"Black")
         self.font_freetype.render_to(self.screen,self.pos3,cat.actions[2],"Black")
 
-        self.cursor.rect.x = self.postitions[self.current_position].x - 50
-        self.cursor.rect.y = self.postitions[self.current_position].y - 6
+        self.cursor.rect.x = self.postitions[self.current_position].x - 35
+        self.cursor.rect.y = self.postitions[self.current_position].y - 1
         if self.active == True:
             self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y, self.cursor.cursor_sprites)
         else:
@@ -253,8 +280,7 @@ class Item_Box(Box):
         i = 50
         self.current_items.clear()
         self.postitions.clear()
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        self.draw_box(self.rect)
         for item, value in inventory.item_dict.items():
             if value["in_stock"] > 0:
                 self.current_items.append(value)
@@ -266,8 +292,8 @@ class Item_Box(Box):
                 self.postitions.append(pos)
                 self.font_freetype.render_to(self.screen,(self.rect.x +300, self.rect.y +i),f"x {postion['in_stock']}","Black")
                 i+=50
-            self.cursor.rect.x = self.postitions[self.current_position].x - 50
-            self.cursor.rect.y = self.postitions[self.current_position].y - 5
+            self.cursor.rect.x = self.postitions[self.current_position].x - 35
+            self.cursor.rect.y = self.postitions[self.current_position].y
             if cursor_active == False:
                 self.cursor.draw_animated_cursor(self.cursor.box_cursor_sheet,self.cursor.rect.x,self.cursor.rect.y, self.cursor.cursor_sprites)
             else:
@@ -289,10 +315,9 @@ class Ability_Box(Box):
         i = 100
         self.postitions.clear()
         color = "black"
-        pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+        self.draw_box(self.rect)
         mp_line = self.font_freetype.render_to(self.screen,(self.rect.right - 200, self.rect.y +50),f"MP Needed",color)
-
+        color = "black"
         for ability in cat.learned_abilities:
             if ability["mp_cost"] > cat.current_mp:
                 color = "grey"
@@ -301,8 +326,8 @@ class Ability_Box(Box):
             text_spacing = self.font_freetype.get_rect(f"{ability['mp_cost']} ").width
             self.font_freetype.render_to(self.screen,(mp_line.centerx - (text_spacing/2), self.rect.y +i),f"{ability['mp_cost']}",color)
             i += 50
-        self.cursor.rect.x = self.postitions[self.current_position].x - 50
-        self.cursor.rect.y = self.postitions[self.current_position].y - 5
+        self.cursor.rect.x = self.postitions[self.current_position].x -35
+        self.cursor.rect.y = self.postitions[self.current_position].y
         if cursor_active1 == True or cursor_active2 == True:
             self.screen.blit(self.cursor.cursor_inactive_image, (self.cursor.rect.x,self.cursor.rect.y))
             self.cursor.current_sprite = 0
@@ -322,8 +347,7 @@ class Tooltip_Box(Box):
         if self.active == True:
             message_width = self.font_freetype.get_rect(message).width
             message_height = self.font_freetype.get_rect(message).height
-            pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-            pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+            self.draw_box(self.rect)
             self.font_freetype.render_to(self.screen,(self.rect.centerx - message_width/2 , self.rect.centery - message_height/2),message,"Black")
 
 
@@ -332,23 +356,21 @@ class Help_Box(Box):
     def __init__(self,cf_game,box):
         super().__init__(cf_game)
         self.active = False
-        self.height = 340  # Increased from 275 to fit the new mouse control lines
-        self.font_freetype_small = pygame.freetype.SysFont(None,20)
+        self.height = 340  # Vergrößert von 275, um die neuen Zeilen für die Maussteuerung unterzubringen
+        self.font_freetype_small = pygame.freetype.Font("fonts/Cinzel.ttf", 20)
         self.rect = pygame.Rect(box.right -350, self.screen_rect.centery - self.height , 350, self.height )
         self.small_rect = pygame.Rect(self.rect.right - 55, self.rect.y -55, 50,50)
 
     def draw_help_box(self):
         """Zeichnet die Hilfe-Box"""
-        pygame.draw.rect(self.screen,self.box_color,self.small_rect,border_radius=10)
-        pygame.draw.rect(self.screen,self.border_color,self.small_rect,width=3,border_radius=10)
-        self.font_freetype.render_to(self.screen,(self.small_rect.centerx -9, self.small_rect.centery -10),"H","Black")
+        self.draw_box(self.small_rect)
+        self.font_freetype.render_to(self.screen,(self.small_rect.centerx -12, self.small_rect.centery -10),"H","Black")
         help_length = self.font_freetype_small.get_rect("Press To Show Help").width + 5
 
         if self.active == True:
             self.font_freetype_small.render_to(self.screen,(self.small_rect.x - help_length, self.small_rect.bottom - 25),"Press To Hide Help","White")
             char_length = self.font_freetype_small.get_rect("UP/DOWN").width
-            pygame.draw.rect(self.screen,self.box_color,self.rect,border_radius=10)
-            pygame.draw.rect(self.screen,self.border_color,self.rect, width=3, border_radius=10)
+            self.draw_box(self.rect)
             # Keyboard controls
             self.font_freetype_small.render_to(self.screen,(self.rect.x + 40, self.rect.y + 50),"UP/DOWN:","Black")
             self.font_freetype_small.render_to(self.screen,((self.rect.x + 40) + (char_length + 30), self.rect.y + 50),"Move Cursor","Black")
